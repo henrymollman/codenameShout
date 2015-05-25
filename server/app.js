@@ -10,7 +10,6 @@ var bodyParser = require('body-parser');
 var userController = require('./Controllers/userController.js');
 var app = express();
 
-
 var routes = require('./Routes/index');
 
 /* allows access to users file in routes*/
