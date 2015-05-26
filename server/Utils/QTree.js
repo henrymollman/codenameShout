@@ -1,7 +1,7 @@
 function Quadtree(boundaries, maxChildren) {
 
   this.boundaries = boundaries || {x: -122.526000, y: 37.613500, width: 0.2, height: 0.2};
-  this.maxChildren = maxChildren || 4;
+  this.maxChildren = maxChildren || 10;
   this.quadrants = [];
   this.children = [];
 
@@ -141,11 +141,14 @@ function Quadtree(boundaries, maxChildren) {
       // find last position then delete according to id
     Quadtree.prototype.remove = function(item) {
       var results = this.get(item);
+      item.x = +item.x;
+      item.y = +item.y;
       for (var i = 0; i < results.length; i++) {
-        if (results[i].username === item.username) {
-          results.splice(i, 1);
+        if (results[i].x === item.x && results[i].y === item.y) {
+          var removedItem = results.splice(i, 1);
         }
       }
+      return removedItem;
     };
 
     // broadcast function 
@@ -189,7 +192,23 @@ function Quadtree(boundaries, maxChildren) {
         width: width,
         height: height
       }, this.maxChildren);
-    }
+    };
+
+    Quadtree.prototype.addData = function() {
+      this.put({x: -122.515, y: 37.614, username: 'henry'});
+      this.put({x: -122.408978, y: 37.783724, username: 'hackreactor'});
+      this.put({x: -122.4184462, y: 37.7237467, username: 'taquerias el farolito'});
+      this.put({x: -122.4832054, y: 37.7241541, username: 'sf zoo'});
+      this.put({x: -122.4806091, y: 37.7828379, username: 'fire pits'});
+      this.put({x: -122.3235064, y: 37.7141402, username: 'at&t park'});
+      this.put({x: -122.3646192, y: 37.7032078, username: 'San+Bruno+Mountain+State+Park'});
+      this.put({x: -122.4572735, y: 37.6769565, username: 'Holy+Cross+Cemetery'});
+      this.put({x: -122.4158602, y: 37.7611788, username: 'Montgomery+St'});
+      this.put({x: -122.416182, y: 37.7876884, username: 'Hopwater+Distribution'});
+      this.put({x: -122.4275959, y: 37.6725777, username: 'Mussel+Rock+Park'});
+      this.put({x: -122.4931705, y: 37.6754989, username: 'Brisbane+Community+Center'});
+      this.put({x: -122.4074967, y: 37.7542639, username: 'greens restaurant'});
+    };
 
 
     module.exports = new Quadtree();
