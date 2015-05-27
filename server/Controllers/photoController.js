@@ -1,8 +1,10 @@
 /* This controller adds and retrieves Photos from the database*/
 
 var Photo = require('../Models/Photo.js');
+var eventController = require('../Controllers/eventController.js');
 var mongoose = require('mongoose');
 var db = require('../db.js');
+var Q = require('q');
 
 
 
@@ -12,22 +14,24 @@ var photoController = {
 
 		console.log(req.body);
 
-		photoId = req.body.photoId;
-	  radius = req.body.radius;
-	  TTL = req.body.TTL;
-	  photoURL = "www.somePhotoFromS3";
-	  recipientList = ["a bunch of fricken people"];
+		var data = {
+			userId: req.body.userId,
+			photoId: req.body.photoId,
+			timestamp: req.body.timestamp || 5000,
+		  radius: +req.body.radius,
+		  TTL: +req.body.TTL,
+		  photoURL: req.body.photoURL || "http://localhost/",
+		};
 
-		Photo.create({
-			photoId: photoId,
-		  radius: radius,
-		  TTL: TTL,
-		  photoURL: photoURL,
-		  recipientList: recipientList
-		}, function(err, photo){
-			if(err){
+		Photo.create(data, function(err, photo){
+			if(err) {
 				console.log("Error: ", err);
 			}
+
+			else if (photo) {
+				eventController.broadcastEvent(req, res);
+			}
+			
 		});
 	},
 

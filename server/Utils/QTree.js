@@ -125,13 +125,14 @@ function Quadtree(boundaries, maxChildren) {
       var results = this.get(item);
       var found;
       results.forEach(function(coord) {
-        if (coord.username === item.username) {
+        if (coord.userId === item.userId) {
           coord.x = item.x;
           coord.y = item.y;
           found = true;
         }
       });
       if (!found) {
+        console.log('not found');
         this.put(item);      
       }
     };
@@ -195,19 +196,21 @@ function Quadtree(boundaries, maxChildren) {
     };
 
     Quadtree.prototype.addData = function() {
-      this.put({x: -122.515, y: 37.614, username: 'henry'});
-      this.put({x: -122.408978, y: 37.783724, username: 'hackreactor'});
-      this.put({x: -122.4184462, y: 37.7237467, username: 'taquerias el farolito'});
-      this.put({x: -122.4832054, y: 37.7241541, username: 'sf zoo'});
-      this.put({x: -122.4806091, y: 37.7828379, username: 'fire pits'});
-      this.put({x: -122.3235064, y: 37.7141402, username: 'at&t park'});
-      this.put({x: -122.3646192, y: 37.7032078, username: 'San+Bruno+Mountain+State+Park'});
-      this.put({x: -122.4572735, y: 37.6769565, username: 'Holy+Cross+Cemetery'});
-      this.put({x: -122.4158602, y: 37.7611788, username: 'Montgomery+St'});
-      this.put({x: -122.416182, y: 37.7876884, username: 'Hopwater+Distribution'});
-      this.put({x: -122.4275959, y: 37.6725777, username: 'Mussel+Rock+Park'});
-      this.put({x: -122.4931705, y: 37.6754989, username: 'Brisbane+Community+Center'});
-      this.put({x: -122.4074967, y: 37.7542639, username: 'greens restaurant'});
+      this.put({x: -122.408978, y: 37.783724, userId: Math.floor(Math.random() * 100000)});
+      this.put({x: -122.4184462, y: 37.7237467, userId: Math.floor(Math.random() * 100000)});
+      this.put({x: -122.4832054, y: 37.7241541, userId: Math.floor(Math.random() * 100000)});
+      this.put({x: -122.4806091, y: 37.7828379, userId: Math.floor(Math.random() * 100000)});
+      this.put({x: -122.3235064, y: 37.7141402, userId: Math.floor(Math.random() * 100000)});
+      this.put({x: -122.3646192, y: 37.7032078, userId: Math.floor(Math.random() * 100000)});
+      this.put({x: -122.4572735, y: 37.6769565, userId: Math.floor(Math.random() * 100000)});
+      this.put({x: -122.4158602, y: 37.7611788, userId: Math.floor(Math.random() * 100000)});
+      this.put({x: -122.416182, y: 37.7876884, userId: Math.floor(Math.random() * 100000)});
+      this.put({x: -122.4275959, y: 37.6725777, userId: Math.floor(Math.random() * 100000)});
+      this.put({x: -122.4931705, y: 37.6754989, userId: Math.floor(Math.random() * 100000)});
+      this.put({x: -122.4074967, y: 37.7542639, userId: Math.floor(Math.random() * 100000)});
+      this.put({x: -122.515, y: 37.615, userId: 21409});
+      this.put({x: -122.515, y: 37.619, userId: 96025});
+      this.put({x: -122.515, y: 37.618, userId: 72355});
     };
 
 

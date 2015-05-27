@@ -2,7 +2,8 @@ var User = require('../Models/User.js');
 var mongoose = require('mongoose');
 var db = require('../db.js');
 var Promise = require('bluebird');
-var bcrypt = require('bcrypt-nodejs')
+var bcrypt = require('bcrypt-nodejs');
+var Q = require('q');
 
 var userController = {
 
@@ -10,15 +11,14 @@ signupUser: function(req, res) {
 
   var username = req.body.username;
   var password = bcrypt.hashSync(req.body.password);
-  var randInt = Math.floor(Math.random() * 10000);
+  var randInt = Math.floor(Math.random() * 100000);
 
-  User.findOne({ username: req.body.username })
-    .exec(function(err, user) {
-      if (!user) {
-        var newUser = new User({
-          username: username,
-          password: password,
-          uuId: randInt
+  var user = this.getUserFromDB({ username: req.body.username });
+    if (!user) {
+      var newUser = new User({
+        username: username,
+        password: password,
+        userId: randInt,
         });
         newUser.save(function(err, newUser) { 
           if (err) {
@@ -31,8 +31,7 @@ signupUser: function(req, res) {
         console.log('Account already exists');
         res.end();
       }
-    });
-  },
+},
 
   retrieveUsers: function(req, res) {
     User.find({}, function(err, data) {
@@ -50,20 +49,20 @@ signupUser: function(req, res) {
     var username = req.body.username;
     var password = req.body.password;
 
-    User.findOne({username: username}, function(err, person) {
-      if (err) console.log(err);
-      else if (!person) {
-        console.log("This user does not exist.");
-        res.send('None found');
+    var user = this.getUserFromDB({ username: req.body.username }, function(user) {
+
+      if (!user) {
+        console.log('user not found');
+        res.end();
       }
 
       else {
-        var hashedPassword = person.password;
+        var hashedPassword = user.password;
         bcrypt.compare(password, hashedPassword, function(err, match) {
           if (err) return (err);
           console.log(match);
           if (match) {
-            res.json({userId: person.uuId});
+            res.json(user);
             res.end();
           }
           else {
@@ -73,7 +72,44 @@ signupUser: function(req, res) {
         });
       }
     });
+
   },
+
+  getUserFromDB: function(person, cb) {   
+    if (person.uuId) {
+      User.findOne({uuId: person.uuId}, function(err, person) {
+        if (err) console.log(err);
+        else if (person) {
+          return person;
+        }
+        else return null;
+      });
+    }
+
+    else if (person.username) {
+      User.findOne({username: person.username}, function(err, person) {
+        if (err) console.log(err);
+        else if (person) {
+          cb(person);
+        }
+        else return null;
+      });
+    }
+  },
+
+  updateInbox: function(userId, eventObj, cb) {
+    var query = {userId: userId};
+    User.findOne(query, function(err, user) {
+      if (err) {
+        console.log(err);
+      }
+      else if (user) {
+        console.log(user);
+        user.inbox.push(eventObj);
+        user.save();
+      }
+    })
+  }
 
 }
 
