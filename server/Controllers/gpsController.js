@@ -1,4 +1,5 @@
 var quadtree = require('../Utils/QTree.js');
+var queue = require('../Utils/Queue.js');
 var userController = require('../Controllers/userController.js');
 
 
@@ -9,8 +10,7 @@ var gpsController = {
   insertCoords: function(req, res) {
 
     var userId = req.body.userId;
-
-    console.log('inserting coordinates ' + typeof userId);
+    timestamp = new Date().getTime();
 
     var node = {
       x: +req.body.x, 
@@ -19,6 +19,8 @@ var gpsController = {
     }
 
     quadtree.update(node);
+    node.timestamp = new Date().getTime();
+    queue.insert(node);
 
     var inbox = userController.retrieveInbox(userId, null, function(inbox) {
       console.log(inbox);
@@ -37,7 +39,8 @@ var gpsController = {
     };
 
     var nearbyNodes = this.getNodes(searchParams);
-    res.send(nearbyNodes);
+    console.log(nearbyNodes);
+    res.end();
   },
 
   // This will get the distance between two coordinates
@@ -99,8 +102,21 @@ var gpsController = {
   // load dummy data for testing
   loadData: function(req, res) {
     quadtree.addData();
+    quadtree.addData2();
     res.end();
   },
+
+  deleteNodes: function(req, res) {
+    var self = this;
+    setTimeout(function() {
+      if (queue.cleanUp()) {
+        console.log('got item');
+      };
+      self.deleteNodes(req, res);
+    }, 1000);
+    res.end();
+  },
+
 
 };
 

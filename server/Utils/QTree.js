@@ -45,7 +45,7 @@ Quadtree.prototype.put = function(item) {
 
   // check length against the max number of coordinates per quadrant
   var length = this.children.length;
-  if (this.children.length > this.maxChildren) {
+  if ((this.depth < this.maxChildren + 1) && (this.children.length > this.maxChildren)) {
 
     // create new quadrants
     this.subDivide();
