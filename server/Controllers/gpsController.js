@@ -12,7 +12,8 @@ var gpsController = {
   // this will insert a coordinate to the quadtree for insertion
   insertCoords: function(req, res) {
 
-
+    if (quadtree.inBounds(req.body)) {
+    console.log('in bounds yes!');
     var userId = req.body.userId;
 
     var timestamp = new Date().getTime();
@@ -22,14 +23,20 @@ var gpsController = {
       y: +req.body.y,
       userId: userId
     };
-    quadtree.update(node);
 
-    node.timestamp = timestamp;
+      quadtree.update(node);
+
+      node.timestamp = timestamp;
 
 
-    var inbox = userController.retrieveInbox(userId, node, function(inbox) {
-      res.send(inbox);
+      userController.retrieveInbox(userId, node, function(inbox) {
+        res.send(inbox);
       });
+    }
+    else {
+      console.log('out of bounds')
+      res.send('Out of bounds');
+    }
   },
 
   // this function takes a request from the user and returns an array of nodes that are within the quadrant
@@ -129,7 +136,7 @@ var gpsController = {
     
     var count = 0;
     
-    while (count < 100000) {
+    while (count < 1000000) {
       var item = {};
       item.x = randIntx();
       item.y = randInty();
