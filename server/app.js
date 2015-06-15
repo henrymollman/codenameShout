@@ -47,7 +47,7 @@ app.use(bodyParser.urlencoded({
 app.use(cookieParser());
 
 app.use('/api', api);
-app.use(express.static(path.join(__dirname, '../shout/www/')));
+app.use(express.static(path.join(__dirname, '../dashboard/public/'), {'index': 'splash.html'}));
 app.use('/dashboard', express.static(path.join(__dirname, '../dashboard/public/')));
 
 
