@@ -167,6 +167,7 @@ function User($localstorage) {
       var photoIds = {};
 
       user.album.forEach(function(photo) {
+        console.log('photo = ' + JSON.stringify(photo));
         photoIds[photo.photoId] = true;
       });
 

@@ -17,7 +17,7 @@ function AlbumFactory($rootScope, $http, CameraFactory, User, API_HOST) {
   return services;
 
   function saveToAlbum(photo) {
-    console.log('saveToAlbum');
+    console.log('saveToAlbum ' + JSON.stringify(photo));
     photo.url = User.url(photo.photoId);
     var saved = User.album('add', photo);
     $rootScope.$broadcast('updateAlbum');
@@ -62,8 +62,10 @@ function AlbumFactory($rootScope, $http, CameraFactory, User, API_HOST) {
     console.log('AlbumFactory getAlbum');
     $http.get(API_HOST + '/users/album/' + User.userId())
       .success(function(data) {
+        console.log('This is the album data from the server');
         console.log(JSON.stringify(data));
         data.forEach(function(photo) {
+          console.log('this is each individual photo');
           console.log(JSON.stringify(photo));
           photo.url = User.url(photo.photoId);
         });
