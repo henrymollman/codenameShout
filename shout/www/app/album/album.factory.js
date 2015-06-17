@@ -80,6 +80,7 @@ function AlbumFactory($rootScope, $http, CameraFactory, User, API_HOST) {
       });
   }
 
+
   function updateAlbum() {
     $rootScope.$broadcast('updateAlbum', album);
   }
