@@ -80,6 +80,34 @@ function AlbumFactory($rootScope, $http, CameraFactory, User, API_HOST) {
       });
   }
 
+  function getAlbum() {
+    console.log('AlbumFactory getAlbum');
+    $http.get(API_HOST + '/users/album/' + User.userId())
+      .success(function(data) {
+        console.log('This is the album data from the server');
+        console.log(JSON.stringify(data));
+        data.forEach(function(photo) {
+          console.log('this is each individual photo');
+          console.log(JSON.stringify(photo));
+          photo.url = User.url(photo.photoId);
+          saveToAlbum(photo);
+        });
+        // $rootScope.$broadcast('updateAlbum');
+      })
+      .error(function() {
+        console.log('error getting inbox');
+      });
+  }
+
+  function createThumbData(collection) {
+    collection.forEach(function(photo) {
+      if (!photo.thumb) {
+        resizeFile(photo.url, function(imageData) {
+          photo.thumb = imageData;
+        });
+      }
+    });
+  }
 
   function updateAlbum() {
     $rootScope.$broadcast('updateAlbum', album);
