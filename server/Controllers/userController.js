@@ -242,7 +242,7 @@ var userController = {
           cb(user.inbox);
         });
       }
-      else cb(null);
+      else console.log('no user found');
     })
   },
 

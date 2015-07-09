@@ -101,9 +101,11 @@ var eventController = {
     // the recipients will now have their inbox updated with the newly broadcast photo, and will have the inbox sent to them via the user controller.
     .then(function(data) {
       data.event.recipientList.forEach(function(recipient) {
-        userController.updateInbox(recipient.userId, data.event);
+        userController.updateInbox(recipient.userId, data.event, function(inbox) {
+          res.send(inbox);
       });
     res.end();
+    });
     });
   },
 

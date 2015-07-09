@@ -27,10 +27,3193 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
+              <h2 id="server-config">Server Config</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
               
             </div>
             
-            <div class="content"><div class='highlight'><pre>#!<span class="hljs-regexp">/usr/</span>bin/env node
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> express = <span class="hljs-built_in">require</span>(<span class="hljs-string">'express'</span>);
+<span class="hljs-keyword">var</span> path = <span class="hljs-built_in">require</span>(<span class="hljs-string">'path'</span>);
+<span class="hljs-keyword">var</span> db = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./db.js'</span>);
+<span class="hljs-keyword">var</span> favicon = <span class="hljs-built_in">require</span>(<span class="hljs-string">'serve-favicon'</span>);
+<span class="hljs-keyword">var</span> logger = <span class="hljs-built_in">require</span>(<span class="hljs-string">'morgan'</span>);
+<span class="hljs-keyword">var</span> cookieParser = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cookie-parser'</span>);
+<span class="hljs-keyword">var</span> bodyParser = <span class="hljs-built_in">require</span>(<span class="hljs-string">'body-parser'</span>);
+<span class="hljs-keyword">var</span> userController = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./Controllers/userController.js'</span>);
+<span class="hljs-keyword">var</span> gpsController = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./Controllers/gpsController.js'</span>);
+<span class="hljs-keyword">var</span> app = express();</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Initialize AWS</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> AWS = <span class="hljs-built_in">require</span>(<span class="hljs-string">'aws-sdk'</span>);
+AWS.config.loadFromPath(path.join(__dirname + <span class="hljs-string">'/lib/config/aws.json'</span>));
+
+<span class="hljs-keyword">var</span> routes = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./Routes/index'</span>);
+<span class="hljs-comment">/* allows access to users file in routes*/</span>
+<span class="hljs-keyword">var</span> users = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./Routes/users'</span>);
+<span class="hljs-comment">/* allows access to photos file in routes*/</span>
+<span class="hljs-keyword">var</span> photos = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./Routes/photos'</span>);
+<span class="hljs-keyword">var</span> gps = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./Routes/gps'</span>);
+<span class="hljs-keyword">var</span> events = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./Routes/events'</span>);
+<span class="hljs-keyword">var</span> api = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./Routes/api'</span>);
+<span class="hljs-keyword">var</span> dashboard = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./Routes/dashboard'</span>);
+
+<span class="hljs-comment">/* allows access to dashboard */</span>
+<span class="hljs-keyword">var</span> dashboard = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./Routes/dashboard'</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Headers set for testing</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>app.all(<span class="hljs-string">'*'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res, next</span>) </span>{
+  res.header(<span class="hljs-string">"Access-Control-Allow-Origin"</span>, <span class="hljs-string">"*"</span>);
+  res.header(<span class="hljs-string">"Access-Control-Allow-Headers"</span>, <span class="hljs-string">"X-Requested-With, Content-Type, Accept"</span>);
+  res.header(<span class="hljs-string">"Access-Control-Allow-Methods"</span>, <span class="hljs-string">"GET, POST, PUT, DELETE, OPTIONS"</span>);
+  next();
+});</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>uncomment after placing your favicon in /public
+app.use(favicon(__dirname + ‘/public/favicon.ico’));</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>app.use(logger(<span class="hljs-string">'dev'</span>));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+  extended: <span class="hljs-literal">false</span>
+}));
+app.use(cookieParser());
+
+app.use(<span class="hljs-string">'/api'</span>, api);
+app.use(express.static(path.join(__dirname, <span class="hljs-string">'../dashboard/public/'</span>), {<span class="hljs-string">'index'</span>: <span class="hljs-string">'splash.html'</span>}));
+app.use(<span class="hljs-string">'/dashboard'</span>, express.static(path.join(__dirname, <span class="hljs-string">'../dashboard/public/'</span>)));
+
+
+app.use(<span class="hljs-string">'/users'</span>, users);
+app.use(<span class="hljs-string">'/photos'</span>, photos);
+app.use(<span class="hljs-string">'/gps'</span>, gps);
+app.use(<span class="hljs-string">'/events'</span>, events);
+app.use(<span class="hljs-string">'/dashboard'</span>, dashboard);
+gpsController.pruneTree();
+
+
+<span class="hljs-built_in">module</span>.exports = app;
+
+<span class="hljs-keyword">var</span> mongoose = <span class="hljs-built_in">require</span>(<span class="hljs-string">'mongoose'</span>);
+
+mongoURI = process.env.mongoURI || <span class="hljs-string">'mongodb://localhost:27017/shoutr'</span>;
+mongoose.connect(mongoURI);
+
+<span class="hljs-keyword">var</span> db = mongoose.connection;
+
+db.on(<span class="hljs-string">'error'</span>, <span class="hljs-built_in">console</span>.error.bind(<span class="hljs-built_in">console</span>, <span class="hljs-string">'connection error:'</span>));
+
+db.once(<span class="hljs-string">'open'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Mongodb connection open'</span>);
+});
+
+<span class="hljs-built_in">module</span>.exports = db;
+
+<span class="hljs-keyword">var</span> config = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../lib/config/aws.json'</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>This function will provide the client with a temporary token used to upload photos to an Amazon S3 bucket.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>exports.getClientConfig = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res, next</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'GET Client Config'</span>);
+  <span class="hljs-keyword">return</span> res.json(<span class="hljs-number">200</span>, {
+    awsConfig: {
+      bucket: config.bucket
+    }
+  });
+};
+
+<span class="hljs-keyword">var</span> AWS = <span class="hljs-built_in">require</span>(<span class="hljs-string">'aws-sdk'</span>);
+<span class="hljs-keyword">var</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">'crypto'</span>);
+<span class="hljs-keyword">var</span> config = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../lib/config/aws.json'</span>);
+<span class="hljs-keyword">var</span> createS3Policy;
+<span class="hljs-keyword">var</span> getExpiryTime;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>The AWS module provides the client with the hash key used to send photos from the device to the Amazon S3 bucket.</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>This function provides the expiration configuration for the authentication token used to upload photos to Amazon S3</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>getExpiryTime = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">var</span> _date = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>();
+  <span class="hljs-keyword">return</span> <span class="hljs-string">''</span> + (_date.getFullYear()) + <span class="hljs-string">'-'</span> + (_date.getMonth() + <span class="hljs-number">1</span>) + <span class="hljs-string">'-'</span> +
+    (_date.getDate() + <span class="hljs-number">1</span>) + <span class="hljs-string">'T'</span> + (_date.getHours() + <span class="hljs-number">3</span>) + <span class="hljs-string">':'</span> + <span class="hljs-string">'00:00.000Z'</span>;
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>the S3 policy is used to create the policy object needed to upload to Amazon</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>createS3Policy = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">contentType, callback</span>) </span>{
+  <span class="hljs-keyword">var</span> date = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>();
+  <span class="hljs-keyword">var</span> s3Policy = {
+    <span class="hljs-string">'expiration'</span>: getExpiryTime(),
+    <span class="hljs-string">'conditions'</span>: [
+      [<span class="hljs-string">'starts-with'</span>, <span class="hljs-string">'$key'</span>, <span class="hljs-string">'s3Upload/'</span>], {
+        <span class="hljs-string">'bucket'</span>: config.bucket
+      }, {
+        <span class="hljs-string">'acl'</span>: <span class="hljs-string">'public-read'</span>
+      },
+      [<span class="hljs-string">'starts-with'</span>, <span class="hljs-string">'$Content-Type'</span>, contentType], {
+        <span class="hljs-string">'success_action_status'</span>: <span class="hljs-string">'201'</span>
+      },
+    [<span class="hljs-string">"content-length-range"</span>, <span class="hljs-number">0</span>, <span class="hljs-number">5242880</span>]
+    ]
+  };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>stringify and encode the policy</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">var</span> stringPolicy = <span class="hljs-built_in">JSON</span>.stringify(s3Policy);
+  <span class="hljs-keyword">var</span> base64Policy = <span class="hljs-keyword">new</span> Buffer(stringPolicy, <span class="hljs-string">'utf-8'</span>).toString(<span class="hljs-string">'base64'</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>sign the base64 encoded policy</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">var</span> signature = crypto.createHmac(<span class="hljs-string">'sha1'</span>, config.secretAccessKey)
+    .update(<span class="hljs-keyword">new</span> Buffer(base64Policy, <span class="hljs-string">'utf-8'</span>)).digest(<span class="hljs-string">'base64'</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>build the results object</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">var</span> s3Credentials = {
+    s3Policy: base64Policy,
+    s3Signature: signature,
+    AWSAccessKeyId: config.accessKeyId
+  };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>send it back</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  callback(s3Credentials);
+};
+
+exports.getS3Policy = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  createS3Policy(req.query.mimeType, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">creds, err</span>) </span>{
+    <span class="hljs-keyword">if</span> (!err) {
+      <span class="hljs-keyword">return</span> res.send(<span class="hljs-number">200</span>, creds);
+    } <span class="hljs-keyword">else</span> {
+      <span class="hljs-keyword">return</span> res.send(<span class="hljs-number">500</span>, err);
+    }
+  });
+};
+
+<span class="hljs-keyword">var</span> Photo = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Models/Photo.js'</span>);
+<span class="hljs-keyword">var</span> Event = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Models/Event.js'</span>);
+
+<span class="hljs-keyword">var</span> dashboardController = {
+
+  fetchPhotos: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'dash controller fetchPhotos called'</span>);
+    <span class="hljs-keyword">var</span> limit = <span class="hljs-number">30</span>; 
+    Photo.find({}).limit(limit).sort({timestamp : -<span class="hljs-number">1</span>}).exec(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, data</span>) </span>{
+      <span class="hljs-keyword">if</span> (!err) {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'sending photos: '</span>, data);
+        res.status(<span class="hljs-number">200</span>).json(data);
+      } <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">throw</span> err;
+        res.send(<span class="hljs-number">500</span>);
+      }
+    }); 
+  },
+
+  fetchEvents: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+    <span class="hljs-keyword">var</span> photoId = req.params.photoId;
+    Event.find({photoId: photoId}).sort({timestamp : <span class="hljs-number">1</span>}).exec(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">error, photos</span>) </span>{
+      <span class="hljs-keyword">if</span> (error) res.status(<span class="hljs-number">500</span>).send();
+      res.status(<span class="hljs-number">200</span>).json(photos);
+    })
+  },
+
+  getNewPhotos: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+    <span class="hljs-keyword">var</span> timestamp = req.params.timestamp;
+    Photo.find({timestamp: {$gt: timestamp}}).sort({timestamp : -<span class="hljs-number">1</span>}).exec(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, data</span>) </span>{
+      <span class="hljs-keyword">if</span> (!err) {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'sending photos: '</span>, data);
+        res.status(<span class="hljs-number">200</span>).json(data);
+      } <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">throw</span> err;
+        res.send(<span class="hljs-number">500</span>);
+      }
+    }); 
+  }
+
+};
+
+<span class="hljs-built_in">module</span>.exports = dashboardController;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>The event controller handles all events broadcast by users. It will perform the bulk of the work when a photo is taken or rebroadcast, 
+and will log all broadcast events into the database. It makes use of the GPS and User Controllers to perform its functions and a can retrieve information 
+from the photo objects.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+<span class="hljs-keyword">var</span> Event = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Models/Event.js'</span>);
+<span class="hljs-keyword">var</span> gpsController = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Controllers/gpsController.js'</span>);
+<span class="hljs-keyword">var</span> userController = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Controllers/userController.js'</span>);
+<span class="hljs-keyword">var</span> Photo = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Models/Photo.js'</span>);
+<span class="hljs-keyword">var</span> mongoose = <span class="hljs-built_in">require</span>(<span class="hljs-string">'mongoose'</span>);
+<span class="hljs-keyword">var</span> <span class="hljs-built_in">Promise</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'bluebird'</span>);
+
+<span class="hljs-built_in">Promise</span>.promisifyAll(mongoose);
+
+<span class="hljs-keyword">var</span> eventController = {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>this broadcast function handles all broadcast events. It takes in a request from the client, either directly or through the photo controller, and 
+checks the quadtree to find the recipient nodes for a broadcast given the broadcast’s range.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+  broadcast: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+    <span class="hljs-keyword">var</span> photoId = req.body.photoId;
+    <span class="hljs-keyword">var</span> timestamp = req.body.timestamp;
+    <span class="hljs-keyword">var</span> userId = req.body.userId;
+    <span class="hljs-keyword">var</span> TTL = +req.body.TTL * <span class="hljs-number">60000</span>;
+    <span class="hljs-keyword">var</span> radius = +req.body.radius; 
+    <span class="hljs-keyword">var</span> caption = req.body.caption || <span class="hljs-string">""</span>;
+
+    <span class="hljs-keyword">var</span> searchParams = {
+      x: +req.body.x,
+      y: +req.body.y,
+      userId: userId,
+      radius: +radius
+    };
+
+    userController.insertBroadcastItem(userId, photoId, caption);
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'calling gps controller and getting nodes'</span>);
+    <span class="hljs-keyword">var</span> tree = gpsController.getNodes(searchParams);
+    <span class="hljs-keyword">var</span> nodes = tree.traverse();</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>the recipients are filtered by the gps controller’s calculate distance function, using the Haversine formula</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">var</span> recipients = gpsController.calculateDist(searchParams, nodes);
+
+    <span class="hljs-keyword">var</span> eventItem = {
+        photoId: photoId,
+        TTL: TTL,
+        radius: radius,
+        timestamp: timestamp,
+        caption: caption
+    };
+
+    <span class="hljs-keyword">var</span> event = <span class="hljs-keyword">new</span> Event({
+      x: searchParams.x,
+      y: searchParams.y,
+      userId: userId,
+      photoId: photoId,
+      TTL: TTL,
+      timestamp: timestamp,
+      radius: radius,
+      recipientList: recipients
+    });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>Using the bluebird library, we will create a promise object that will be resolved only when the photo query and event creation events are complete</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-built_in">Promise</span>.props({
+      photo: Photo.findOne({photoId: photoId}),
+      event: Event.create({
+        x: searchParams.x,
+        y: searchParams.y,
+        userId: userId,
+        photoId: photoId,
+        TTL: TTL,
+        timestamp: timestamp,
+        radius: radius,
+        recipientList: recipients
+      })
+    })
+    .then(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">data</span>) </span>{
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Event created, calling events callback with photo'</span> + data.photo +
+        <span class="hljs-string">'\nevent '</span> + data.event);
+        <span class="hljs-keyword">var</span> photoRecipientList = [];
+        <span class="hljs-keyword">var</span> eventRecipientList = [];</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>here we begin checking the photo object to remove any users who have already received the photo. If the users are not in the photo recipient list,
+they will be added to that list and entered into the event object before saving as having received the broadcast. If they have already received the 
+photo, they will not receive it again and will not be added either the photo object or the event object as a recipient.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        data.event.recipientList.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">user</span>) </span>{
+          <span class="hljs-keyword">if</span> (data.photo.recipientList.indexOf(user.userId) === -<span class="hljs-number">1</span>) {
+            photoRecipientList.push(user.userId);
+            eventRecipientList.push(user);
+            <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'pushed '</span> + user.userId);
+          }
+        });
+
+        data.photo.recipientList = data.photo.recipientList.concat(photoRecipientList);
+        data.event.recipientList = eventRecipientList;
+        data.photo.save();
+        data.event.save();
+        <span class="hljs-keyword">return</span> data;
+      }, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err</span>) </span>{
+          <span class="hljs-built_in">console</span>.log(err);
+          res.send(<span class="hljs-string">'photo not found'</span>);
+      })</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>the recipients will now have their inbox updated with the newly broadcast photo, and will have the inbox sent to them via the user controller.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    .then(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">data</span>) </span>{
+      data.event.recipientList.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">recipient</span>) </span>{
+        userController.updateInbox(recipient.userId, data.event, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">inbox</span>) </span>{
+          res.send(inbox);
+      });
+    res.end();
+    });
+    });
+  },
+
+  getEvents: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+    Event.find({}, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, event</span>) </span>{
+      <span class="hljs-keyword">if</span> (err) {
+        <span class="hljs-built_in">console</span>.log(err);
+        res.send(err);
+      }
+
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (event) {
+        <span class="hljs-built_in">console</span>.log(event);
+        res.json(event);
+      }
+
+    });
+  },
+
+};
+
+
+<span class="hljs-built_in">module</span>.exports = eventController;
+
+<span class="hljs-keyword">var</span> quadtree = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Utils/QTree.js'</span>);
+<span class="hljs-keyword">var</span> queue = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Utils/Queue.js'</span>)
+<span class="hljs-keyword">var</span> userController = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Controllers/userController.js'</span>);
+
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span>(<span class="hljs-built_in">Number</span>.prototype.toRad) === <span class="hljs-string">"undefined"</span>) {
+      <span class="hljs-built_in">Number</span>.prototype.toRad = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span> * <span class="hljs-built_in">Math</span>.PI / <span class="hljs-number">180</span>;
+      };
+    }
+
+<span class="hljs-keyword">var</span> gpsController = {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>insert Coords will receive the user’s coordinates to insert into the quadtree and return the contents of the user’s inbox.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  insertCoords: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+
+    <span class="hljs-keyword">if</span> (quadtree.inBounds(req.body)) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'in bounds yes!'</span>);
+    <span class="hljs-keyword">var</span> userId = req.body.userId;
+
+
+    <span class="hljs-keyword">var</span> timestamp = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>().getTime();
+
+    <span class="hljs-keyword">var</span> node = {
+      x: +req.body.x,
+      y: +req.body.y,
+      userId: userId,
+      timestamp: timestamp
+    };
+
+      quadtree.update(node);
+      queue.addToQueue(node);
+
+      userController.updateInbox(userId, node, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">inbox</span>) </span>{
+        res.send(inbox);
+      });
+    }
+    <span class="hljs-keyword">else</span> {
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'out of bounds'</span>)
+      res.send(<span class="hljs-string">'Out of bounds'</span>);
+    }
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>this function takes a request from the user and returns the quadrant that contains the nodes. </p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  findNearbyNodes: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+
+    <span class="hljs-keyword">var</span> searchParams = {
+      x: req.body.x,
+      y: req.body.y,
+      userId: req.body.userId,
+      radius: +req.body.radius
+    };
+
+
+    <span class="hljs-keyword">var</span> tree = <span class="hljs-keyword">this</span>.getNodes(searchParams);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>because no callback is passed into this function, the nodes are collected and returned</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">var</span> nodes = tree.traverse();</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>to be sent to the user</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    res.send(nodes);
+
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>this function will delete any nodes that are past their expiration, and is called every second. The function will take a node from the queue
+thta is due to be removed, and will call the quadtree’s remove function and pass in the node returned from the queue. If a node has been updated
+with more recent coordinates and a new timestamp, the function will not remove it. This ensures that only nodes with old timestamps will be 
+removed.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+  pruneTree: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">var</span> self = <span class="hljs-keyword">this</span>;
+    <span class="hljs-keyword">var</span> node = queue.removeFromQueue();
+    <span class="hljs-keyword">if</span> (node) {
+      <span class="hljs-keyword">var</span> removedNode = <span class="hljs-keyword">this</span>.removeNode(node);
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Removed '</span> + <span class="hljs-built_in">JSON</span>.stringify(removedNode) + <span class="hljs-string">' from quadtree'</span>);
+    }
+    setTimeout(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+      self.pruneTree();
+    }, <span class="hljs-number">1000</span>);
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>This will get the distance between two coordinates. The formula used below is the Haversine formula, which takes the arc of the earth’s surface
+into account when performing proximity calculations.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+  calculateDist: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">item1, nodes</span>) </span>{
+    <span class="hljs-keyword">var</span> nodeObj = {},
+      nodes = nodes || <span class="hljs-keyword">this</span>.getNodes(item1),
+      recipients = [];
+
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>; i &lt; nodes.length; i++) {
+      <span class="hljs-keyword">if</span> (nodes[i].userId === item1.userId) nodes.splice(i, <span class="hljs-number">1</span>);
+      <span class="hljs-keyword">break</span>;
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>let’s remove the node that initiated the broadcast before checking for nearby coordinates</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>; i &lt; nodes.length; i++) {
+      <span class="hljs-keyword">if</span> (!nodeObj[nodes[i].userId]) {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'adding this object to list '</span> + <span class="hljs-built_in">JSON</span>.stringify(nodes[i]));
+        recipients.push(nodes[i]);
+      }
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <p>The haversine formula is used to calculate the distance between two points, factoring in the spherical shape of the Earth</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">var</span> R = <span class="hljs-number">6371</span>;
+    <span class="hljs-keyword">var</span> lat1 = +item1.x;
+    <span class="hljs-keyword">var</span> lon1 = +item1.y;
+    <span class="hljs-keyword">var</span> lat2, lon2, dlat, dlon;
+    <span class="hljs-keyword">var</span> result = [];
+
+    recipients.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">item2</span>) </span>{
+      lat2 = +item2.x;
+      lon2 = +item2.y;
+      dLat = (lat2 - lat1).toRad();
+      dLon = (lon2 - lon1).toRad();
+      <span class="hljs-keyword">var</span> a = <span class="hljs-built_in">Math</span>.sin(dLat/<span class="hljs-number">2</span>) * <span class="hljs-built_in">Math</span>.sin(dLat/<span class="hljs-number">2</span>) +
+              <span class="hljs-built_in">Math</span>.cos(lat1.toRad()) * <span class="hljs-built_in">Math</span>.cos(lat2.toRad()) *
+              <span class="hljs-built_in">Math</span>.sin(dLon/<span class="hljs-number">2</span>) * <span class="hljs-built_in">Math</span>.sin(dLon/<span class="hljs-number">2</span>);
+      <span class="hljs-keyword">var</span> c = <span class="hljs-number">2</span> * <span class="hljs-built_in">Math</span>.atan2(<span class="hljs-built_in">Math</span>.sqrt(a), <span class="hljs-built_in">Math</span>.sqrt(<span class="hljs-number">1</span>-a));
+      <span class="hljs-built_in">console</span>.log(c);
+      <span class="hljs-keyword">var</span> d = R * c;
+      d = d * <span class="hljs-number">0.621371</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>console.log(d);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+      <span class="hljs-keyword">if</span> (d &lt; item1.radius) {
+        result.push({userId: item2.userId, y: item2.y, x: item2.x});
+      }
+    });
+    <span class="hljs-keyword">return</span> result;
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <p>Find nodes in Quadtree</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  getNodes: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">searchParams</span>) </span>{
+    <span class="hljs-keyword">var</span> node = quadtree.get(searchParams);
+    <span class="hljs-keyword">return</span> node;
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>
+              <p>Invoke calculate distance function</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  getDist: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+    <span class="hljs-keyword">var</span> result = <span class="hljs-keyword">this</span>.calculateDist(req.body);
+    res.send(result);
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>
+              <p>remove nodes from quadtree if they match the item sent</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  removeNode: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">item</span>) </span>{
+    <span class="hljs-keyword">return</span> quadtree.remove(item);
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-32">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-32">&#182;</a>
+              </div>
+              <p>initiate the removal function</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  initRemove: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+    <span class="hljs-keyword">var</span> item = <span class="hljs-keyword">this</span>.removeNode(req.body);
+    res.send(item);
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-33">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-33">&#182;</a>
+              </div>
+              <p>load dummy data for testing, in this case one million coordinate points</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  loadData: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+    <span class="hljs-keyword">var</span> date = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>();
+
+    <span class="hljs-keyword">var</span> randIntx = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+      <span class="hljs-keyword">return</span> <span class="hljs-built_in">Math</span>.random() * (<span class="hljs-number">125.3</span> - <span class="hljs-number">67.8</span>) - (<span class="hljs-number">125.3</span>);
+    };
+    
+    <span class="hljs-keyword">var</span> randInty = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+      <span class="hljs-keyword">return</span> <span class="hljs-built_in">Math</span>.random() * (<span class="hljs-number">67.5</span> - <span class="hljs-number">10</span>) + <span class="hljs-number">10</span>;
+    }
+    
+    <span class="hljs-keyword">var</span> count = <span class="hljs-number">0</span>;
+    
+    <span class="hljs-keyword">while</span> (count &lt; <span class="hljs-number">1000000</span>) {
+      <span class="hljs-keyword">var</span> item = {};
+      item.x = randIntx();
+      item.y = randInty();
+      item.timestamp = date;
+      item.userId = <span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * <span class="hljs-number">9999999</span>);
+      quadtree.put(item);
+      count++;
+    };
+    res.end();
+  },
+
+};
+
+<span class="hljs-built_in">module</span>.exports = gpsController;
+
+<span class="hljs-comment">/* This controller adds and retrieves Photos from the database*/</span>
+
+<span class="hljs-keyword">var</span> Photo = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Models/Photo.js'</span>);
+<span class="hljs-keyword">var</span> eventController = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Controllers/eventController.js'</span>);
+<span class="hljs-keyword">var</span> userController = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Controllers/userController.js'</span>);
+
+
+<span class="hljs-keyword">var</span> photoController = {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-34">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-34">&#182;</a>
+              </div>
+              <p>The store photo function is used whenever a new photo is taken by the client and shared. The photo metadata is created and saved to the database
+after the photo has been uploaded to the Amazon S3 bucket. Once the photo metadata is saved, the storePhoto function calls the broadcast event function
+on the event Controller, which starts the process of updating all of the local users’ inboxes with the photo.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+  storePhoto: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">JSON</span>.stringify(req.body));
+    <span class="hljs-keyword">var</span> TTL = +req.body.TTL * <span class="hljs-number">60000</span>;
+    <span class="hljs-keyword">var</span> userId = req.body.userId;
+    <span class="hljs-keyword">var</span> photoId = req.body.photoId;
+    <span class="hljs-keyword">var</span> caption = req.body.caption;
+    <span class="hljs-keyword">var</span> data = {
+      photoId: photoId,
+      radius: +req.body.radius,
+      TTL: TTL,
+      timestamp: +req.body.timestamp,
+      userId: userId,
+      recipientList: [userId],
+      caption: caption
+    };
+    Photo.findOne({
+      photoId: photoId
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, photo</span>) </span>{
+      <span class="hljs-keyword">if</span> (err) {
+        <span class="hljs-built_in">console</span>.log(err);
+      }  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (photo) {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Photo already exists'</span>);
+        res.send(photo);
+      } <span class="hljs-keyword">else</span> {
+        Photo.create(data, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, result</span>) </span>{
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'creating photo now'</span>);
+          <span class="hljs-keyword">if</span> (err) {
+            <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'error creating photo: '</span>, err);
+            res.send(<span class="hljs-number">500</span>, err);
+          } <span class="hljs-keyword">else</span> {
+            <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'photo saved'</span>);
+            eventController.broadcast(req, res);
+          }
+        });
+      }
+    });
+  },
+
+  getPhotos: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+    Photo.find({}, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, data</span>) </span>{
+      <span class="hljs-keyword">if</span> (!err) {
+        res.send(<span class="hljs-number">200</span>, data);
+      } <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">throw</span> err;
+      }
+    });
+  },
+
+
+  testingFunc: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+    res.status(<span class="hljs-number">200</span>);
+    res.end();
+  },
+
+  deletePhoto: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+    <span class="hljs-keyword">var</span> userId = req.body.userId;
+    <span class="hljs-keyword">var</span> photoId = req.body.photoId;
+    userController.cullInbox(userId, photoId);
+    res.end();
+  },
+
+  deleteAlbumPhoto: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+    <span class="hljs-keyword">var</span> userId = req.body.userId;
+    <span class="hljs-keyword">var</span> photoId = req.body.photoId;
+    userController.cullAlbum(req, res, userId, photoId);
+  }
+};
+
+<span class="hljs-built_in">module</span>.exports = photoController;
+
+<span class="hljs-keyword">var</span> User = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Models/User.js'</span>);
+<span class="hljs-keyword">var</span> <span class="hljs-built_in">Promise</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'bluebird'</span>);
+<span class="hljs-keyword">var</span> bcrypt = <span class="hljs-built_in">require</span>(<span class="hljs-string">'bcrypt-nodejs'</span>);
+
+<span class="hljs-keyword">var</span> userController = {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-35">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-35">&#182;</a>
+              </div>
+              <p>This function will generate a unique user ID for a user on signup.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  generateUserId: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">var</span> id = <span class="hljs-string">""</span>;
+    <span class="hljs-keyword">while</span> (id.length &lt; <span class="hljs-number">7</span>) {
+      id += <span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * (<span class="hljs-number">10</span> - <span class="hljs-number">1</span>) + <span class="hljs-number">1</span>);
+    }
+    <span class="hljs-keyword">return</span> id;
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-36">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-36">&#182;</a>
+              </div>
+              <p>This function saves a new user into the database and encrypts that user’s password.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  signupUser: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+    <span class="hljs-keyword">var</span> username = req.body.username;
+    <span class="hljs-keyword">var</span> password = bcrypt.hashSync(req.body.password);
+    <span class="hljs-keyword">var</span> email = req.body.email;
+    <span class="hljs-keyword">var</span> userId = <span class="hljs-keyword">this</span>.generateUserId();
+
+    <span class="hljs-keyword">this</span>.getUserFromDB({
+      username: req.body.username
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">user</span>) </span>{
+      <span class="hljs-keyword">if</span> (!user) {
+        <span class="hljs-keyword">var</span> newUser = <span class="hljs-keyword">new</span> User({
+          username: username,
+          password: password,
+          userId: userId,
+          email: email
+        });
+
+        newUser.save(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, newUser</span>) </span>{
+          <span class="hljs-keyword">if</span> (err) {
+            <span class="hljs-built_in">console</span>.log(err);
+            res.status(<span class="hljs-number">500</span>).send(err);
+          }
+          <span class="hljs-keyword">else</span> {
+            newUser.newUser = <span class="hljs-literal">true</span>;
+            res.status(<span class="hljs-number">200</span>).send(newUser);
+          }
+        });
+      } 
+      <span class="hljs-keyword">else</span> {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Account already exists'</span>);
+        <span class="hljs-keyword">var</span> errorCode = {errorCode: <span class="hljs-string">"Account already exists."</span>}
+        res.status(<span class="hljs-number">500</span>).send(errorCode);
+        }
+      })
+  },
+
+
+  retrieveUsers: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res, cb</span>) </span>{
+    User.find({}, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, data</span>) </span>{
+      <span class="hljs-keyword">if</span> (!err &amp;&amp; cb) {
+        cb(data);
+      } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
+      <span class="hljs-keyword">else</span> {
+        res.send(data);
+      }
+    });
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-37">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-37">&#182;</a>
+              </div>
+              <p>This signup function can be used for users who sign up through the app or using their facebook accounts to authenticate. Depending on the size
+of the password, the server will determine which method the client used to authenticate, and reacts appropriately.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  signinUser: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+    <span class="hljs-keyword">var</span> username = req.body.username;
+    <span class="hljs-keyword">var</span> password = req.body.password;
+    <span class="hljs-keyword">this</span>.getUserFromDB({
+      username: req.body.username
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">user</span>) </span>{
+      <span class="hljs-keyword">if</span> (user &amp;&amp; user.password.length &gt; <span class="hljs-number">20</span>) {
+        <span class="hljs-keyword">var</span> hashedPassword = user.password;
+        bcrypt.compare(password, hashedPassword, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, match</span>) </span>{
+          <span class="hljs-keyword">if</span> (err) {
+            <span class="hljs-keyword">return</span> (err);
+            <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'error'</span>);
+          }
+          <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (match) {
+            <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'a match'</span>);
+            res.status(<span class="hljs-number">200</span>).send(user);
+          } <span class="hljs-keyword">else</span> {
+            <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'not a match'</span>);
+            <span class="hljs-keyword">var</span> resError = {errorCode: <span class="hljs-string">"password"</span>}
+            res.status(<span class="hljs-number">500</span>).send(resError);
+          }
+        });
+      } 
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (user) {
+         <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'not a match'</span>);
+          <span class="hljs-keyword">var</span> resError = {errorCode: <span class="hljs-string">"password"</span>}
+          res.status(<span class="hljs-number">500</span>).send(resError);
+      }
+      <span class="hljs-keyword">else</span> {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'user not found'</span>);
+        <span class="hljs-keyword">var</span> resError = {errorCode: <span class="hljs-string">'username'</span>}
+        res.status(<span class="hljs-number">500</span>).send(resError);  
+      }
+    });
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-38">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-38">&#182;</a>
+              </div>
+              <p>The facebook sign in function checks the user’s access token that is sent by facebook against the user record in the database. If the user
+does not exist, this function will create him or her.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  fbSignin: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+    <span class="hljs-keyword">var</span> self = <span class="hljs-keyword">this</span>;
+    <span class="hljs-keyword">var</span> fbId = +req.body.password;
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">JSON</span>.stringify(req.body));
+    <span class="hljs-keyword">this</span>.getUserFromDB({
+    password: fbId
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">user</span>) </span>{
+      <span class="hljs-keyword">if</span> (user) {
+        res.status(<span class="hljs-number">200</span>).send(user);
+        }
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (!user &amp;&amp; req.body.username) {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'no user found'</span>);
+        <span class="hljs-keyword">var</span> userId = self.generateUserId();
+        <span class="hljs-keyword">var</span> email = req.body.email || <span class="hljs-string">""</span>;
+        newUser = <span class="hljs-keyword">new</span> User({
+          username: req.body.username,
+          password: fbId,
+          userId: userId,
+          email: email
+        });
+        
+        newUser.save(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, newUser</span>) </span>{
+          <span class="hljs-keyword">if</span> (err) {
+            <span class="hljs-built_in">console</span>.log(err);
+            res.status(<span class="hljs-number">500</span>).send(err);
+          }
+          res.status(<span class="hljs-number">200</span>).send(newUser);
+        });
+      }
+      <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">var</span> errorCode = {errorCode: <span class="hljs-string">'user'</span>};
+        res.status(<span class="hljs-number">500</span>).send(errorCode);
+      }
+    })
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-39">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-39">&#182;</a>
+              </div>
+              <p>this function is used by other functions in the user controller to retrieve a user by userid, username or facebook access token when logging in.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  getUserFromDB: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">person, cb</span>) </span>{
+    <span class="hljs-keyword">if</span> (person.uuId) {
+      User.findOne({
+        uuId: person.uuId
+      }, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, person</span>) </span>{
+        <span class="hljs-keyword">if</span> (err) <span class="hljs-built_in">console</span>.log(err);
+        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (person) {
+          <span class="hljs-keyword">return</span> person;
+        } <span class="hljs-keyword">else</span> <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+      });
+    } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (person.username) {
+      User.findOne({
+        username: person.username
+      }, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, person</span>) </span>{
+        <span class="hljs-keyword">if</span> (err) <span class="hljs-built_in">console</span>.log(err);
+        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (person) {
+          <span class="hljs-keyword">if</span> (cb) {
+            cb(person);
+          } <span class="hljs-keyword">else</span> {
+            <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'User already exists'</span>);
+            <span class="hljs-keyword">return</span> <span class="hljs-string">'User already exists'</span>;
+          }
+        } <span class="hljs-keyword">else</span> cb(<span class="hljs-literal">null</span>);
+      });
+    }
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (person.password) {
+      User.findOne({
+        password: person.password
+      }, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, person</span>) </span>{
+        <span class="hljs-keyword">if</span> (err) <span class="hljs-built_in">console</span>.log(err);
+        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (person) {
+          <span class="hljs-keyword">if</span> (cb) {
+            cb(person);
+          } <span class="hljs-keyword">else</span> {
+            <span class="hljs-keyword">return</span> user;
+          }
+        } <span class="hljs-keyword">else</span> cb(<span class="hljs-literal">null</span>);
+      });
+    }
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-40">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-40">&#182;</a>
+              </div>
+              <p>this function takes in an event object from the event controller, and either updates the inbox and returns the inbox to be sent to the client,
+or simply returns the inbox to the client if no event object is passed in. It also performs checks to be sure that no event broadcast is added
+to the inbox more than once, and that there are no expired items in the user’s inbox.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+  updateInbox: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">userId, eventObj, cb</span>) </span>{
+
+    <span class="hljs-keyword">if</span> (eventObj &amp;&amp; eventObj.photoId) {
+      <span class="hljs-keyword">var</span> caption = eventObj.caption || <span class="hljs-string">""</span>;
+          <span class="hljs-keyword">var</span> broadcastEvent = {
+            photoId: eventObj.photoId,
+            TTL: eventObj.TTL,
+            radius: eventObj.radius,
+            timestamp: eventObj.timestamp,
+            caption: caption
+          };
+        }
+
+    User.findOne({
+      userId: userId
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, user</span>) </span>{
+
+      <span class="hljs-keyword">if</span> (err) {
+        <span class="hljs-built_in">console</span>.log(err);
+        <span class="hljs-keyword">return</span> err;
+      }
+
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (user) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-41">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-41">&#182;</a>
+              </div>
+              <p>any items that have expired do not remain in the inbox, depending on the time to live on the event and the current time</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> newInbox = user.inbox.reduce(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">acc, inboxItem</span>) </span>{
+ 
+
+          <span class="hljs-keyword">var</span> diff = eventObj.timestamp - inboxItem.timestamp;
+          <span class="hljs-keyword">if</span> (diff &lt; inboxItem.TTL) {
+            acc.push(inboxItem);
+          }
+          <span class="hljs-keyword">return</span> acc;
+        }, []);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-42">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-42">&#182;</a>
+              </div>
+              <p>this function will check the current inbox to ensure that no duplicates are entered into the user’s inbox</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span> (broadcastEvent) {
+          <span class="hljs-keyword">var</span> bool = <span class="hljs-literal">true</span>;
+          newInbox.reduce(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">bool, eventItem</span>) </span>{
+            <span class="hljs-keyword">if</span> (bool &amp;&amp; eventItem.photoId !== eventObj.photoId) {
+              <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+          }, <span class="hljs-literal">true</span>);
+
+          <span class="hljs-keyword">if</span> (bool) {
+            newInbox.push(broadcastEvent);
+            user.inbox = newInbox;
+            user.save();
+          }
+
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-43">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-43">&#182;</a>
+              </div>
+              <p>save the inbox to the user object in the database</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        user.update({
+          inbox: newInbox
+        }, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, data</span>) </span>{
+          <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'sending user the inbox'</span>);
+          cb(user.inbox);
+        });
+      }
+      <span class="hljs-keyword">else</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'no user found'</span>);
+    })
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-44">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-44">&#182;</a>
+              </div>
+              <p>this function is triggered by the client’s saving a broadcast item to their album for later viewing</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  insertBroadcastItem: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">userId, photoId, caption</span>) </span>{
+    User.findOneAndUpdate({userId: userId}, {$push: {album: {photoId: photoId, caption: caption}}}, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">error, user</span>)</span>{
+      <span class="hljs-keyword">if</span> (error) <span class="hljs-built_in">console</span>.log(error);
+      <span class="hljs-keyword">else</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'item added to '</span> + user.username);
+    })
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-45">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-45">&#182;</a>
+              </div>
+              <p>this function will clear out a user’s inbox entirely.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  cullInbox: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">userId, photoId</span>) </span>{
+    <span class="hljs-keyword">var</span> query = {
+      userId: userId
+    }
+
+    User.findOne(query, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, user</span>) </span>{
+      <span class="hljs-keyword">if</span> (err) <span class="hljs-built_in">console</span>.log(err);
+
+      <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">if</span> (user) {
+          <span class="hljs-keyword">var</span> inbox = user.inbox;
+          <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>; i &lt; inbox.length; i++) {
+            <span class="hljs-keyword">if</span> (user.inbox[i].photoId === photoId) {
+              user.inbox.splice(i, <span class="hljs-number">1</span>);
+              <span class="hljs-keyword">break</span>;
+            }  
+          }
+          user.inbox = inbox;
+          user.save();
+        };
+      }
+    });
+  },
+
+
+  addToAlbum: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'addToAlbum: '</span>, <span class="hljs-built_in">JSON</span>.stringify(req.body));
+    User.findOneAndUpdate({userId: req.body.userId}, {$push: {album: {photoId: req.body.photoId, caption: req.body.caption}}}, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">error, user</span>)</span>{
+      <span class="hljs-keyword">if</span> (error) {
+        res.status(<span class="hljs-number">500</span>).send();
+      } <span class="hljs-keyword">else</span> {
+        res.status(<span class="hljs-number">200</span>).send();
+      }
+    });
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-46">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-46">&#182;</a>
+              </div>
+              <p>this function clears out a user’s album entirely</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  cullAlbum: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res, userId, photoId</span>) </span>{
+    <span class="hljs-keyword">var</span> query = {
+      userId: userId
+    }
+
+    User.findOne(query, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, user</span>) </span>{
+      <span class="hljs-keyword">if</span> (err) {
+        <span class="hljs-built_in">console</span>.log(err);
+        res.status(<span class="hljs-number">500</span>).send();
+      } 
+
+      <span class="hljs-keyword">else</span> {
+        <span class="hljs-keyword">if</span> (user) {
+          <span class="hljs-keyword">var</span> album = user.album;
+          <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>; i &lt; album.length; i++) {
+            <span class="hljs-keyword">if</span> (user.album[i].photoId === photoId) {
+              user.album.splice(i, <span class="hljs-number">1</span>);
+              <span class="hljs-keyword">break</span>;
+            }  
+          }
+          user.album = album;
+          user.save();
+        };
+        res.status(<span class="hljs-number">200</span>).send();
+      }
+    });
+  },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-47">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-47">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  getAlbum: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'USERID: '</span>, req.params.userId);
+    <span class="hljs-keyword">var</span> userId = req.params.userId;
+    User.findOne({userId: userId}, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">error, user</span>)</span>{
+      <span class="hljs-keyword">if</span> (error) {
+        res.status(<span class="hljs-number">500</span>).send();
+      } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (user) {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'USER.ALBUM: '</span>, user.album);
+        res.status(<span class="hljs-number">200</span>).send(user.album);
+      }
+      <span class="hljs-keyword">else</span> {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'User not found'</span>);
+        res.status(<span class="hljs-number">500</span>).send(<span class="hljs-string">'User not found'</span>);
+      }
+    });
+  },
+
+  getInbox: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+    <span class="hljs-keyword">var</span> userId = req.params.userId;
+    User.findOne({userId: userId}, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">error, user</span>)</span>{
+      <span class="hljs-keyword">if</span> (error) {
+        res.status(<span class="hljs-number">500</span>).send();
+      } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (user) {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'USER.INBOX: '</span>, user.inbox);
+        res.status(<span class="hljs-number">200</span>).send(user.inbox);
+      }
+      <span class="hljs-keyword">else</span> {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'User not found'</span>);
+        res.status(<span class="hljs-number">500</span>).send(<span class="hljs-string">'User not found'</span>);
+      }
+    });
+  },
+
+  deleteInbox: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+    <span class="hljs-keyword">var</span> userId = req.params.userId; 
+    User.findOneAndUpdate({userId: userId}, {$set: {inbox : [] }}, { <span class="hljs-string">'new'</span> : <span class="hljs-literal">true</span> }, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">error, user</span>)</span>{
+      <span class="hljs-keyword">if</span> (error) {
+        res.status(<span class="hljs-number">500</span>).send();
+      } <span class="hljs-keyword">else</span> {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'just cleared the users inbox: '</span>, user.inbox);
+        res.status(<span class="hljs-number">200</span>).send(user.inbox);
+      }
+    });
+  }
+
+};
+
+<span class="hljs-built_in">module</span>.exports = userController;
+
+
+<span class="hljs-keyword">var</span> mongoose = <span class="hljs-built_in">require</span>(<span class="hljs-string">'mongoose'</span>);
+
+<span class="hljs-keyword">var</span> EventSchema = <span class="hljs-keyword">new</span> mongoose.Schema({
+
+  userId: {
+    type: <span class="hljs-built_in">String</span>,
+    required: <span class="hljs-literal">true</span>,
+    unique: <span class="hljs-literal">false</span>
+  },
+
+  photoId: {
+    type: <span class="hljs-built_in">String</span>,
+    required: <span class="hljs-literal">true</span>,
+    unique: <span class="hljs-literal">false</span>
+  },
+
+  timestamp: {
+    type: <span class="hljs-built_in">Number</span>,
+    required: <span class="hljs-literal">true</span>,
+    unique: <span class="hljs-literal">true</span>
+  },
+
+  TTL: {
+    type: <span class="hljs-built_in">Number</span>,
+    required: <span class="hljs-literal">true</span>,
+    unique: <span class="hljs-literal">false</span>
+  },
+
+  radius: {
+    type: <span class="hljs-built_in">Number</span>,
+    required: <span class="hljs-literal">true</span>,
+    unique: <span class="hljs-literal">false</span>
+  },
+
+  x: {
+    type: <span class="hljs-built_in">Number</span>,
+    required: <span class="hljs-literal">true</span>,
+    unique: <span class="hljs-literal">false</span>
+  },
+
+  y: {
+    type: <span class="hljs-built_in">Number</span>,
+    required: <span class="hljs-literal">true</span>,
+    unique: <span class="hljs-literal">false</span>
+  },
+
+  recipientList: {
+    type: <span class="hljs-built_in">Array</span>,
+    required: <span class="hljs-literal">false</span>,
+    unique: <span class="hljs-literal">false</span>
+  }
+
+});
+
+<span class="hljs-built_in">module</span>.exports = mongoose.model(<span class="hljs-string">'Event'</span>, EventSchema);
+
+
+
+<span class="hljs-keyword">var</span> mongoose = <span class="hljs-built_in">require</span>(<span class="hljs-string">'mongoose'</span>);
+
+<span class="hljs-keyword">var</span> PhotoSchema = <span class="hljs-keyword">new</span> mongoose.Schema({
+
+  photoId: {
+    type: <span class="hljs-built_in">String</span>,
+    required: <span class="hljs-literal">true</span>,
+    unique: <span class="hljs-literal">true</span>
+  },
+
+  userId: {
+    type: <span class="hljs-built_in">String</span>,
+    required: <span class="hljs-literal">true</span>,
+    unique: <span class="hljs-literal">false</span>
+  },
+
+  radius: {
+    type: <span class="hljs-built_in">Number</span>,
+    required: <span class="hljs-literal">true</span>,
+    unique: <span class="hljs-literal">false</span>
+  },
+
+  TTL: {
+    type: <span class="hljs-built_in">Number</span>,
+    required: <span class="hljs-literal">true</span>,
+    unique: <span class="hljs-literal">false</span>
+  },
+
+  recipientList: {
+    type: <span class="hljs-built_in">Array</span>,
+    required: <span class="hljs-literal">false</span>,
+    unique: <span class="hljs-literal">false</span>
+  },
+
+  timestamp: {
+    type: <span class="hljs-built_in">Number</span>,
+    required: <span class="hljs-literal">true</span>,
+    unique: <span class="hljs-literal">false</span> 
+  },
+
+  caption: {
+    type: <span class="hljs-built_in">String</span>,
+    required: <span class="hljs-literal">false</span>,
+    unique: <span class="hljs-literal">false</span>
+  }
+});
+
+<span class="hljs-built_in">module</span>.exports = mongoose.model(<span class="hljs-string">'Photo'</span>, PhotoSchema);
+
+<span class="hljs-keyword">var</span> mongoose = <span class="hljs-built_in">require</span>(<span class="hljs-string">'mongoose'</span>);
+
+<span class="hljs-keyword">var</span> UserSchema = <span class="hljs-keyword">new</span> mongoose.Schema({
+
+  userId: {
+    type: <span class="hljs-built_in">String</span>,
+    required: <span class="hljs-literal">true</span>,
+    unique: <span class="hljs-literal">true</span> 
+  },
+
+  username: {
+    type: <span class="hljs-built_in">String</span>,
+    required: <span class="hljs-literal">true</span>,
+    unique: <span class="hljs-literal">true</span>
+  },
+
+  password: {
+    type: <span class="hljs-built_in">String</span>,
+    required: <span class="hljs-literal">true</span>,
+    unique: <span class="hljs-literal">false</span>
+  },
+
+  inbox: {
+    type: <span class="hljs-built_in">Array</span>,
+    required: <span class="hljs-literal">false</span>,
+    unique: <span class="hljs-literal">false</span>
+  },
+
+  album: {
+    type: <span class="hljs-built_in">Array</span>,
+    required: <span class="hljs-literal">false</span>,
+    unique: <span class="hljs-literal">false</span>
+  },
+
+  email: {
+    type: <span class="hljs-built_in">String</span>,
+    required: <span class="hljs-literal">false</span>,
+    unique: <span class="hljs-literal">false</span>
+  }
+
+});
+
+<span class="hljs-built_in">module</span>.exports = mongoose.model(<span class="hljs-string">'User'</span>, UserSchema);
+
+<span class="hljs-keyword">var</span> express = <span class="hljs-built_in">require</span>(<span class="hljs-string">'express'</span>);
+<span class="hljs-keyword">var</span> router = express.Router();
+<span class="hljs-keyword">var</span> api = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Controllers/api'</span>);
+<span class="hljs-keyword">var</span> aws = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Controllers/aws'</span>);
+<span class="hljs-keyword">var</span> fbToken = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../lib/config/facebook.json'</span>)
+
+router.get(<span class="hljs-string">'/config'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'GET /api/config'</span>);
+  api.getClientConfig(req, res);
+});
+
+router.get(<span class="hljs-string">'/s3Policy'</span>, aws.getS3Policy);
+
+router.get(<span class="hljs-string">'/fbToken'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+	<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'GET /api/fbToken'</span>);
+	res.status(<span class="hljs-number">200</span>).send(fbToken.appID);
+})</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-48">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-48">&#182;</a>
+              </div>
+              <p>All undefined api routes should return a 404
+router.get(‘/<em>‘, function(req, res) {
+ console.log(‘ERROR GET /api/</em>‘);
+ res.send(404);
+});</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+<span class="hljs-built_in">module</span>.exports = router;
+
+<span class="hljs-keyword">var</span> express = <span class="hljs-built_in">require</span>(<span class="hljs-string">'express'</span>);
+<span class="hljs-keyword">var</span> router = express.Router();
+<span class="hljs-keyword">var</span> dashboardController = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Controllers/dashboardController.js'</span>);
+
+router.get(<span class="hljs-string">'/photos'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'get req to photos recd'</span>);
+  dashboardController.fetchPhotos(req, res);
+});
+
+router.get(<span class="hljs-string">'/events/:photoId'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  dashboardController.fetchEvents(req, res);
+});
+
+router.get(<span class="hljs-string">'/photos/:timestamp'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  dashboardController.getNewPhotos(req, res);
+})
+
+<span class="hljs-built_in">module</span>.exports = router;
+<span class="hljs-keyword">var</span> express = <span class="hljs-built_in">require</span>(<span class="hljs-string">'express'</span>);
+<span class="hljs-keyword">var</span> router = express.Router();
+<span class="hljs-keyword">var</span> eventController = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Controllers/eventController.js'</span>);
+
+router.post(<span class="hljs-string">'/broadcast'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'user broadcast'</span>);
+  eventController.broadcast(req, res);
+});
+
+router.post(<span class="hljs-string">'/getEvents'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'getting events'</span>);
+  eventController.getEvents(req, res);
+});
+
+<span class="hljs-built_in">module</span>.exports = router;
+
+<span class="hljs-keyword">var</span> express = <span class="hljs-built_in">require</span>(<span class="hljs-string">'express'</span>);
+<span class="hljs-keyword">var</span> router = express.Router();
+<span class="hljs-keyword">var</span> gpsController = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Controllers/gpsController.js'</span>);
+
+router.post(<span class="hljs-string">'/position'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'adding new GPS data'</span>);
+  gpsController.insertCoords(req, res);
+});
+
+router.post(<span class="hljs-string">'/getlocal'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'getting nearby nodes'</span>);
+  gpsController.findNearbyNodes(req, res);
+});
+
+router.post(<span class="hljs-string">'/distance'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'getting distance'</span>);
+  gpsController.getDist(req, res);
+});
+
+router.get(<span class="hljs-string">'/postdata'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'posting data'</span>);
+  gpsController.loadData(req, res);
+});
+
+
+<span class="hljs-built_in">module</span>.exports = router;
+
+<span class="hljs-keyword">var</span> express = <span class="hljs-built_in">require</span>(<span class="hljs-string">'express'</span>);
+<span class="hljs-keyword">var</span> router = express.Router();
+
+<span class="hljs-comment">/* GET home page. */</span>
+router.get(<span class="hljs-string">'/'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res, next</span>) </span>{
+  res.render(<span class="hljs-string">'index'</span>, {
+    title: <span class="hljs-string">'Express'</span>
+  });
+});
+
+<span class="hljs-built_in">module</span>.exports = router;
+
+<span class="hljs-keyword">var</span> express = <span class="hljs-built_in">require</span>(<span class="hljs-string">'express'</span>);
+<span class="hljs-keyword">var</span> router = express.Router();
+<span class="hljs-keyword">var</span> photoController = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Controllers/photoController.js'</span>);
+
+router.post(<span class="hljs-string">'/newPhoto'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'got request to store photo'</span>);
+  photoController.storePhoto(req, res);
+});
+
+router.get(<span class="hljs-string">'/getPhotos'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'getting Photos'</span>);
+  photoController.getPhotos(req, res);
+});
+
+router.get(<span class="hljs-string">'/test'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Testing Route pinged'</span>);
+  photoController.testingFunc(req, res);
+});
+
+router.post(<span class="hljs-string">'/delete'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+	<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Deleting photo '</span> + req.body.photoId);
+	photoController.deletePhoto(req, res);
+});
+
+router.post(<span class="hljs-string">'/deleteFromAlbum'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'req to delete photo from album '</span> + req.body.photoId);
+  photoController.deleteAlbumPhoto(req, res);
+})
+
+<span class="hljs-built_in">module</span>.exports = router;
+
+<span class="hljs-keyword">var</span> express = <span class="hljs-built_in">require</span>(<span class="hljs-string">'express'</span>);
+<span class="hljs-keyword">var</span> router = express.Router();
+<span class="hljs-keyword">var</span> userController = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Controllers/userController.js'</span>);
+
+<span class="hljs-comment">/* GET users listing. */</span>
+router.get(<span class="hljs-string">'/'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res, next</span>) </span>{
+  res.send(<span class="hljs-string">'respond with a resource'</span>);
+});
+
+<span class="hljs-comment">/* GET the list of users in the database*/</span>
+router.get(<span class="hljs-string">'/list'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'listing users'</span>);
+  userController.retrieveUsers(req, res);
+});
+
+<span class="hljs-comment">/*POST a new user to the database*/</span>
+router.post(<span class="hljs-string">'/signup'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'got signup request'</span>);
+  userController.signupUser(req, res);
+});
+<span class="hljs-comment">/* POST sign in an existing user*/</span>
+router.post(<span class="hljs-string">'/signin'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'got signin request'</span>);
+  userController.signinUser(req, res);
+});
+
+router.post(<span class="hljs-string">'/fbSignin'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'got facebook signin request'</span>);
+  userController.fbSignin(req, res);
+});
+
+router.post(<span class="hljs-string">'/deleteUser'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">username</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'deleting user'</span>);
+  userController.deleteUser(username);
+});
+
+router.post(<span class="hljs-string">'/clearInbox'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  <span class="hljs-keyword">if</span> (req.body.username) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'clearing '</span> + req.body.username + <span class="hljs-string">'\'s inbox'</span>);
+    userController.cullInbox(req, res);
+  } <span class="hljs-keyword">else</span> {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'clearing all inboxes'</span>);
+    userController.cullInbox(req, res);
+  }
+});
+
+router.get(<span class="hljs-string">'/inbox/:userId'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'getting user inbox'</span>);
+  userController.getInbox(req, res);
+});
+
+router.get(<span class="hljs-string">'/album/:userId'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'getting album'</span>);
+  userController.getAlbum(req, res);
+});
+
+router.post(<span class="hljs-string">'/album'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'adding another photo to album'</span>);
+  userController.addToAlbum(req, res);
+});</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-49">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-49">&#182;</a>
+              </div>
+              <p>this route is used when a user logs out or stops location polling so everything in the inbox gets deleted</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>router.get(<span class="hljs-string">'/deleteInbox/:userId'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'deleteInbox route called'</span>)
+  userController.deleteInbox(req, res);
+});
+
+<span class="hljs-built_in">module</span>.exports = router;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Quadtree</span>(<span class="hljs-params">boundaries, maxChildren, root, depth</span>) </span>{
+
+  <span class="hljs-keyword">this</span>.boundaries = boundaries || {
+    x: -<span class="hljs-number">125.3</span>,
+    y: <span class="hljs-number">10</span>,
+    width: <span class="hljs-number">57.5</span>,
+    height: <span class="hljs-number">57.5</span>
+  };
+
+  <span class="hljs-keyword">this</span>.maxChildren = maxChildren || <span class="hljs-number">10</span>;
+  <span class="hljs-keyword">this</span>.root = root || <span class="hljs-literal">null</span>;
+  <span class="hljs-keyword">this</span>.depth = depth || <span class="hljs-number">0</span>;
+  <span class="hljs-keyword">this</span>.quadrants = [];
+  <span class="hljs-keyword">this</span>.children = [];
+
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-50">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-50">&#182;</a>
+              </div>
+              <p>if we do not check if the coordinate is in bounds the tree will sudivide forever once it reaches max children…</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Quadtree.prototype.inBounds = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">item</span>) </span>{
+  <span class="hljs-keyword">if</span> (item.x &gt; <span class="hljs-keyword">this</span>.boundaries.x &amp;&amp; item.x &lt; <span class="hljs-keyword">this</span>.boundaries.x + <span class="hljs-keyword">this</span>.boundaries.width &amp;&amp;
+      item.y &gt; <span class="hljs-keyword">this</span>.boundaries.y &amp;&amp; item.y &lt; <span class="hljs-keyword">this</span>.boundaries.y + <span class="hljs-keyword">this</span>.boundaries.height) {
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+  }
+  <span class="hljs-keyword">else</span> {
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+  }
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-51">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-51">&#182;</a>
+              </div>
+              <p>insert function</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Quadtree.prototype.put = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">item</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-52">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-52">&#182;</a>
+              </div>
+              <p>if our quadrant is divided into sub quadrants…</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.quadrants.length) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-53">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-53">&#182;</a>
+              </div>
+              <p>find the correct quadrant</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">var</span> index = <span class="hljs-keyword">this</span>.findIndex(item);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-54">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-54">&#182;</a>
+              </div>
+              <p>insert the item</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.quadrants[index].put(item);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-55">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-55">&#182;</a>
+              </div>
+              <p>bail</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">return</span>;
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-56">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-56">&#182;</a>
+              </div>
+              <p>add the new coordinate object to the children array</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">this</span>.children.push(item);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-57">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-57">&#182;</a>
+              </div>
+              <p>check length against the max number of coordinates per quadrant</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">var</span> length = <span class="hljs-keyword">this</span>.children.length;
+  <span class="hljs-keyword">if</span> (length &gt; <span class="hljs-keyword">this</span>.maxChildren &amp;&amp; !(<span class="hljs-keyword">this</span>.depth &gt; <span class="hljs-number">50</span>)) { <span class="hljs-comment">// (this.depth &lt; this.maxChildren + 1) &amp;&amp; </span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-58">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-58">&#182;</a>
+              </div>
+              <p>create new quadrants</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.subDivide();</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-59">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-59">&#182;</a>
+              </div>
+              <p>now add those coordinates to their new quadrants</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>; i &lt; length; i++) {
+      <span class="hljs-keyword">this</span>.put(<span class="hljs-keyword">this</span>.children[i]);
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-60">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-60">&#182;</a>
+              </div>
+              <p>empty the array of children</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">this</span>.children = [];
+  }
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-61">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-61">&#182;</a>
+              </div>
+              <p>find function</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Quadtree.prototype.get = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">item, callback</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-62">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-62">&#182;</a>
+              </div>
+              <p>if our quadrant is divided into sub quadrants…</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.quadrants.length) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'quadtree logging item '</span> + item);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-63">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-63">&#182;</a>
+              </div>
+              <p>find the correct quadrant</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.checkRange(item)) {
+      <span class="hljs-keyword">var</span> index = <span class="hljs-keyword">this</span>.findIndex(item);
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.quadrants[index].get(item);
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-64">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-64">&#182;</a>
+              </div>
+              <p>execute callback if it exists</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (callback) {
+      callback(<span class="hljs-keyword">this</span>.quadrants[index].get(item));
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-65">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-65">&#182;</a>
+              </div>
+              <p>otherwise just return the quadrant</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">else</span> {
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;
+    }
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-66">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-66">&#182;</a>
+              </div>
+              <p>our quadtree does not have any quadrants</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.quadrants.length &amp;&amp; <span class="hljs-keyword">this</span>.children.length) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'what else if'</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-67">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-67">&#182;</a>
+              </div>
+              <p>invoke callback if it is passed in</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> (callback) {
+      callback(<span class="hljs-keyword">this</span>);
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-68">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-68">&#182;</a>
+              </div>
+              <p>otherwise just return the quadrant</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">else</span> {
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;
+    }
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-69">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-69">&#182;</a>
+              </div>
+              <p>just return the root of the quadtree</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">else</span> {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'returning root'</span>);
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.root || <span class="hljs-keyword">this</span>;
+  }
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-70">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-70">&#182;</a>
+              </div>
+              <p>get index</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Quadtree.prototype.findIndex = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">item</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-71">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-71">&#182;</a>
+              </div>
+              <p>create index to return</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">var</span> index;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-72">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-72">&#182;</a>
+              </div>
+              <p>find the midpoint of quadrant</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">var</span> horizontalMidpoint = <span class="hljs-keyword">this</span>.boundaries.x + (<span class="hljs-keyword">this</span>.boundaries.width / <span class="hljs-number">2</span>);
+  <span class="hljs-keyword">var</span> verticalMidpoint = <span class="hljs-keyword">this</span>.boundaries.y + (<span class="hljs-keyword">this</span>.boundaries.height / <span class="hljs-number">2</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-73">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-73">&#182;</a>
+              </div>
+              <p>assign boolean value to check position</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">var</span> left = item.x &lt; horizontalMidpoint;
+  <span class="hljs-keyword">var</span> bottom = item.y &lt; verticalMidpoint;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-74">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-74">&#182;</a>
+              </div>
+              <p>check the positions for quadrant location to search</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">if</span> (left) {
+    <span class="hljs-keyword">if</span> (bottom) {
+      index = <span class="hljs-number">2</span>;
+    } <span class="hljs-keyword">else</span> index = <span class="hljs-number">0</span>;
+  } <span class="hljs-keyword">else</span> {
+    <span class="hljs-keyword">if</span> (bottom) {
+      index = <span class="hljs-number">3</span>;
+    } <span class="hljs-keyword">else</span> index = <span class="hljs-number">1</span>;
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-75">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-75">&#182;</a>
+              </div>
+              <p>return the quadrant index to getter function…</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">return</span> index;
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-76">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-76">&#182;</a>
+              </div>
+              <p>this check will either update a coordinate based on proximity and a matching user ID. If none is found, it will simply insert the coordinate into the quadtree</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Quadtree.prototype.update = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">item</span>) </span>{
+  <span class="hljs-keyword">var</span> quadrant = <span class="hljs-keyword">this</span>.get(item);
+  <span class="hljs-keyword">var</span> results = quadrant.children;
+  <span class="hljs-keyword">var</span> found;
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">JSON</span>.stringify(item));
+  results.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">coord</span>) </span>{
+    <span class="hljs-keyword">if</span> (coord.userId === item.userId) {
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'updating user'</span>);
+      coord.x = item.x;
+      coord.y = item.y;
+      found = <span class="hljs-literal">true</span>;
+    }
+  });
+  <span class="hljs-keyword">if</span> (!found) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'not found'</span>);
+    <span class="hljs-keyword">this</span>.put(item);
+  }
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-77">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-77">&#182;</a>
+              </div>
+              <p>find last position then delete according to user id</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Quadtree.prototype.remove = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">item</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">JSON</span>.stringify(item));
+  <span class="hljs-keyword">var</span> quadrant = <span class="hljs-keyword">this</span>.get(item);
+  <span class="hljs-keyword">var</span> results = quadrant.children;
+  <span class="hljs-keyword">var</span> removedItem;
+  item.x = +item.x;
+  item.y = +item.y;
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>; i &lt; results.length; i++) {
+    <span class="hljs-keyword">if</span> (results[i].userId === item.userId &amp;&amp; results[i].timestamp === item.timestamp) {
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'found a match = '</span> + results[i].userId);
+      removedItem = results.splice(i, <span class="hljs-number">1</span>);
+    }
+  }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-78">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-78">&#182;</a>
+              </div>
+              <p>first perform check on child elements for threshold
+if the quadrants have less than half of their root node’s maximum children, fold the quadrants and re insert the nodes into the single quadrant</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.quadrants.length &amp;&amp; results.length &lt; <span class="hljs-keyword">this</span>.maxChildren / <span class="hljs-number">2</span>) {
+    <span class="hljs-keyword">this</span>.unfold(quadrant);
+  }
+  <span class="hljs-keyword">return</span> removedItem;
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-79">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-79">&#182;</a>
+              </div>
+              <p>tree traversal
+this function will traverse through the quadtree, either executing a callback on every child or returning all of the children in a single array</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Quadtree.prototype.traverse = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">callback, nodes</span>) </span>{
+
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.children.length &amp;&amp; callback) {
+      <span class="hljs-keyword">var</span> length = <span class="hljs-keyword">this</span>.children.length;
+      <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>; i &lt; length; i++) {
+          callback(<span class="hljs-keyword">this</span>.children[i]);
+      }
+
+      <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.quadrants.length) {
+        <span class="hljs-keyword">var</span> quadLength = <span class="hljs-keyword">this</span>.quadrants.length;
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> j = <span class="hljs-number">0</span>; j &lt; quadLength; j++) {
+          <span class="hljs-keyword">this</span>.quadrants[j].traverse(callback);
+        }
+      }
+    }
+
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (!callback) {
+      <span class="hljs-keyword">var</span> nodes = nodes || [];
+
+      <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.children.length) {
+        <span class="hljs-keyword">return</span> nodes.concat(<span class="hljs-keyword">this</span>.children);
+        }
+
+      <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.quadrants.length) {
+        <span class="hljs-keyword">var</span> quadLength = <span class="hljs-keyword">this</span>.quadrants.length;
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> j = <span class="hljs-number">0</span>; j &lt; quadLength; j++) {
+          nodes = <span class="hljs-keyword">this</span>.quadrants[j].traverse(<span class="hljs-literal">null</span>, nodes);
+        }
+      }
+      <span class="hljs-keyword">return</span> nodes;
+    }
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-80">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-80">&#182;</a>
+              </div>
+              <p>broadcast function
+use find then find others in same quadrant</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-81">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-81">&#182;</a>
+              </div>
+              <p>subdivide quadrant when necessary</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Quadtree.prototype.subDivide = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">var</span> root = <span class="hljs-keyword">this</span>;
+  <span class="hljs-keyword">var</span> depth = <span class="hljs-keyword">this</span>.depth + <span class="hljs-number">1</span>;
+  <span class="hljs-keyword">var</span> width = <span class="hljs-keyword">this</span>.boundaries.width / <span class="hljs-number">2</span>;
+  <span class="hljs-keyword">var</span> height = <span class="hljs-keyword">this</span>.boundaries.height / <span class="hljs-number">2</span>;
+  <span class="hljs-keyword">var</span> x = <span class="hljs-keyword">this</span>.boundaries.x;
+  <span class="hljs-keyword">var</span> y = <span class="hljs-keyword">this</span>.boundaries.y;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-82">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-82">&#182;</a>
+              </div>
+              <p>top left quadrant</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">this</span>.quadrants[<span class="hljs-number">0</span>] = <span class="hljs-keyword">new</span> Quadtree({
+    x: x,
+    y: y + height,
+    width: width,
+    height: height
+  }, <span class="hljs-keyword">this</span>.maxChildren, root, depth);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-83">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-83">&#182;</a>
+              </div>
+              <p>top right quadrant</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">this</span>.quadrants[<span class="hljs-number">1</span>] = <span class="hljs-keyword">new</span> Quadtree({
+    x: x + width,
+    y: y + height,
+    width: width,
+    height: height
+  }, <span class="hljs-keyword">this</span>.maxChildren, root, depth);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-84">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-84">&#182;</a>
+              </div>
+              <p>bottom left quadrant</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">this</span>.quadrants[<span class="hljs-number">2</span>] = <span class="hljs-keyword">new</span> Quadtree({
+    x: x,
+    y: y,
+    width: width,
+    height: height
+  }, <span class="hljs-keyword">this</span>.maxChildren, root, depth);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-85">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-85">&#182;</a>
+              </div>
+              <p>bottom right quadrant</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">this</span>.quadrants[<span class="hljs-number">3</span>] = <span class="hljs-keyword">new</span> Quadtree({
+    x: x + width,
+    y: y,
+    width: width,
+    height: height
+  }, <span class="hljs-keyword">this</span>.maxChildren, root, depth);
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-86">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-86">&#182;</a>
+              </div>
+              <p>this function will reduce four quadrants in a node to just the parent, and distribute the nodes within those quadrants to the parent’s 
+children array</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+Quadtree.prototype.unfold = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">quad</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-87">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-87">&#182;</a>
+              </div>
+              <p>check if root </p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">if</span> (quad.children.length &amp;&amp; !quad.quadrants.length) {
+    quad.root.unfold(quad.root);
+  }
+  
+  <span class="hljs-keyword">var</span> count = <span class="hljs-number">0</span>;
+
+  quad.quadrants.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">quadrant</span>) </span>{
+    count += quadrant.children.length;
+  });
+
+  <span class="hljs-keyword">if</span> (count &lt; quad.maxChildren / <span class="hljs-number">2</span>) {
+    <span class="hljs-keyword">var</span> nodes = quad.quadrants.reduce(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">acc, quadrant</span>) </span>{
+      <span class="hljs-keyword">if</span> (quadrant.children.length) {
+        acc = acc.concat(quadrant.children);
+      }
+      <span class="hljs-keyword">return</span> acc;
+    }, []);
+
+    quad.quadrants = [];
+
+    nodes.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">node</span>) </span>{
+      quad.put(node);
+    });
+  }
+ };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-88">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-88">&#182;</a>
+              </div>
+              <p>The Checkrange function will check if the radius of a broadcast events exceeds the boundaries of a quadrant, and if so the recursive process of finding
+nodes will stop and the node containing all of the children will be returned in the ‘get’ function</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+Quadtree.prototype.checkRange = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">coord, range</span>) </span>{
+  <span class="hljs-keyword">var</span> radius = coord.radius * <span class="hljs-number">0.027065</span>;
+
+  <span class="hljs-keyword">var</span> range = range || 
+  {
+    north: +coord.y + radius, 
+    east: +coord.x + radius, 
+    south: +coord.y - radius, 
+    west: +coord.x - radius,
+  };
+
+  <span class="hljs-keyword">var</span> bounds = {
+    north: <span class="hljs-keyword">this</span>.boundaries.y + <span class="hljs-keyword">this</span>.boundaries.height,
+    east: <span class="hljs-keyword">this</span>.boundaries.x + <span class="hljs-keyword">this</span>.boundaries.width,
+    south: <span class="hljs-keyword">this</span>.boundaries.y,
+    west: <span class="hljs-keyword">this</span>.boundaries.x,
+  };
+
+  <span class="hljs-keyword">if</span> (bounds.north &gt; range.north &amp;&amp;
+      bounds.east &gt; range.east &amp;&amp;
+      bounds.south &lt; range.south &amp;&amp;
+      bounds.west &lt; range.west) 
+    {
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+    }
+
+    <span class="hljs-keyword">else</span> {
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+    }
+};
+
+
+<span class="hljs-built_in">module</span>.exports = <span class="hljs-keyword">new</span> Quadtree();</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-89">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-89">&#182;</a>
+              </div>
+              <p>The queue is responsible for removing nodes from the quadtree that have remained in the quadtree for more than one minute. The queue will 
+return any item that has expired, and checks the first item in the queue every one second. There are safeguards in place to keep the process
+from removing items from the quadtree that are not due to be removed, such as an exact timestamp check for an item being used to identify the
+correct node to be removed.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">Queue</span>(<span class="hljs-params"></span>) </span>{
+	<span class="hljs-keyword">var</span> _queue = [];
+
+	<span class="hljs-keyword">var</span> obj = {};
+
+	obj.addToQueue = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">user</span>) </span>{
+			_queue.push(user);
+	};
+
+	obj.removeFromQueue = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+		<span class="hljs-keyword">var</span> timestamp = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>().getTime();
+		<span class="hljs-keyword">if</span> (_queue.length &amp;&amp; timestamp - _queue[<span class="hljs-number">0</span>].timestamp &gt; <span class="hljs-number">60000</span>) {
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Current time in ms = '</span> + timestamp + <span class="hljs-string">' object timestamp = '</span> + _queue[<span class="hljs-number">0</span>].timestamp + <span class="hljs-string">' = '</span> + (timestamp - _queue[<span class="hljs-number">0</span>].timestamp))
+      <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Removing user '</span> + <span class="hljs-built_in">JSON</span>.stringify(_queue[<span class="hljs-number">0</span>]));
+			<span class="hljs-keyword">return</span> _queue.shift();
+		}
+    <span class="hljs-keyword">else</span> <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+	};
+
+  <span class="hljs-keyword">return</span> obj;
+}
+
+<span class="hljs-built_in">module</span>.exports = <span class="hljs-keyword">new</span> Queue();
+<span class="hljs-keyword">var</span> _ = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lodash'</span>);
+
+<span class="hljs-comment">/**
+ * Load environment configuration
+ */</span>
+<span class="hljs-built_in">module</span>.exports = _.merge(
+  <span class="hljs-built_in">require</span>(<span class="hljs-string">'./env/all.js'</span>),
+  <span class="hljs-built_in">require</span>(<span class="hljs-string">'./env/'</span> + process.env.NODE_ENV + <span class="hljs-string">'.js'</span>) || {});
+
+<span class="hljs-keyword">var</span> app = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../app'</span>);
+<span class="hljs-keyword">var</span> supertest = <span class="hljs-built_in">require</span>(<span class="hljs-string">'supertest'</span>);
+<span class="hljs-keyword">var</span> should = <span class="hljs-built_in">require</span>(<span class="hljs-string">'should'</span>);
+<span class="hljs-keyword">var</span> photoController = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Controllers/photoController'</span>);
+<span class="hljs-keyword">var</span> Photo = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Models/Photo'</span>);
+<span class="hljs-keyword">var</span> User = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Models/User'</span>);
+
+describe(<span class="hljs-string">'Photo Controller'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+
+  it(<span class="hljs-string">'s3 docsign function should return signed policyDoc when given valid userId and timeStamp'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">done</span>) </span>{
+    User.create({
+      username: <span class="hljs-string">"newUser"</span>,
+      password: <span class="hljs-string">"1234"</span>,
+      userId: <span class="hljs-string">"1234567"</span>
+    });
+    supertest(app)
+      .post(<span class="hljs-string">'/photos/signPolicyDoc'</span>)
+      .set(<span class="hljs-string">'Content-Type'</span>, <span class="hljs-string">'application/json'</span>)
+      .send(<span class="hljs-string">'{"userId": "1234567", "timeStamp": "1234567890123"}'</span>)
+      .end(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, res</span>) </span>{
+        should(res.body.bucket).be.exactly(<span class="hljs-string">"ripple-photos"</span>);
+        should(res.body.awsKey).be.exactly(<span class="hljs-string">"AKIAIE5AVGKPA4OCKD5A"</span>);
+        res.status.should.equal(<span class="hljs-number">200</span>);
+        User.remove({
+          username: <span class="hljs-string">"newUser"</span>
+        }, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err</span>) </span>{
+          <span class="hljs-keyword">if</span> (err) {
+            <span class="hljs-built_in">console</span>.log(err);
+          }
+        });
+        done();
+
+      });
+  });
+
+  it(<span class="hljs-string">'s3 docsign function should not send signed doc policy if user is not recognized'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">done</span>) </span>{
+    supertest(app)
+      .post(<span class="hljs-string">'/photos/signPolicyDoc'</span>)
+      .set(<span class="hljs-string">'Content-Type'</span>, <span class="hljs-string">'application/json'</span>)
+      .send(<span class="hljs-string">'{"userId": "1234567", "timeStamp": "1234567890123"}'</span>)
+      .end(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, res</span>) </span>{
+        res.status.should.equal(<span class="hljs-number">400</span>);
+        done();
+      });
+  });
+
+});
+
+<span class="hljs-keyword">var</span> mocha = <span class="hljs-built_in">require</span>(<span class="hljs-string">"mocha"</span>);
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">importTest</span>(<span class="hljs-params">name, path</span>) </span>{
+  describe(name, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">require</span>(path);
+  });
+}
+
+describe(<span class="hljs-string">"tests"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+  importTest(<span class="hljs-string">"userTests"</span>, <span class="hljs-string">'./userTests.js'</span>);
+  importTest(<span class="hljs-string">"photoTests"</span>, <span class="hljs-string">'./photoTests'</span>);
+});
+
+<span class="hljs-keyword">var</span> app = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../app'</span>);
+<span class="hljs-keyword">var</span> should = <span class="hljs-built_in">require</span>(<span class="hljs-string">'should'</span>);
+<span class="hljs-keyword">var</span> supertest = <span class="hljs-built_in">require</span>(<span class="hljs-string">'supertest'</span>);
+<span class="hljs-keyword">var</span> userController = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Controllers/userController'</span>);
+<span class="hljs-keyword">var</span> User = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../Models/User'</span>);
+
+describe(<span class="hljs-string">'user controller'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+
+  it(<span class="hljs-string">'should signup user if username does not exist'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">done</span>) </span>{
+    supertest(app)
+      .post(<span class="hljs-string">'/users/signup'</span>)
+      .set(<span class="hljs-string">'Content-Type'</span>, <span class="hljs-string">'application/json'</span>)
+      .send(<span class="hljs-string">'{"username": "newUser", "password": "1234"}'</span>)
+      .end(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, res</span>) </span>{
+        res.status.should.equal(<span class="hljs-number">200</span>);
+        done();
+      });
+  });
+
+  it(<span class="hljs-string">'should reject if username already exists'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">done</span>) </span>{
+    supertest(app)
+      .post(<span class="hljs-string">'/users/signup'</span>)
+      .set(<span class="hljs-string">'Content-Type'</span>, <span class="hljs-string">'application/json'</span>)
+      .send(<span class="hljs-string">'{"username": "newUser", "password": "1234"}'</span>)
+      .end(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, res</span>) </span>{
+        res.status.should.equal(<span class="hljs-number">500</span>);
+        done();
+      });
+  });
+
+  it(<span class="hljs-string">'should delete test user'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">done</span>) </span>{
+    User.remove({
+      username: <span class="hljs-string">"newUser"</span>
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err</span>) </span>{
+      <span class="hljs-keyword">if</span> (err) {
+        <span class="hljs-built_in">console</span>.log(err);
+      } <span class="hljs-keyword">else</span> {
+        User.findOne({
+          username: <span class="hljs-string">"newUser"</span>
+        }, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, res</span>) </span>{
+          <span class="hljs-keyword">if</span> (err) {
+            <span class="hljs-built_in">console</span>.log(err);
+          } <span class="hljs-keyword">else</span> {
+            should(res).be.exactly(<span class="hljs-literal">null</span>);
+            done();
+          }
+        });
+      }
+    });
+  });
+
+
+});
+
+<span class="hljs-keyword">var</span> path = <span class="hljs-built_in">require</span>(<span class="hljs-string">'path'</span>);
+
+<span class="hljs-keyword">var</span> rootPath = path.normalize(__dirname + <span class="hljs-string">'/../../..'</span>);
+
+<span class="hljs-built_in">module</span>.exports = {
+  root: rootPath,
+  port: process.env.PORT || <span class="hljs-number">3000</span>
+};
+
+<span class="hljs-built_in">module</span>.exports = {
+  env: <span class="hljs-string">'development'</span>
+};
+
+<span class="hljs-built_in">module</span>.exports = {
+  env: <span class="hljs-string">'production'</span>
+};
+
+<span class="hljs-built_in">module</span>.exports = {
+  env: <span class="hljs-string">'test'</span>
+};
+
+<span class="hljs-keyword">var</span> app = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../../app.js'</span>);
+<span class="hljs-keyword">var</span> User = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../../Models/User.js'</span>);
+<span class="hljs-keyword">var</span> photoController = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../../Controllers/photoController.js'</span>);
+<span class="hljs-keyword">var</span> Photo = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../../Models/Photo.js'</span>);
+<span class="hljs-keyword">var</span> mocha = <span class="hljs-built_in">require</span>(<span class="hljs-string">'mocha'</span>);
+<span class="hljs-keyword">var</span> quadtree = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../../Utils/Qtree.js'</span>);
+<span class="hljs-keyword">var</span> <span class="hljs-built_in">Promise</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'bluebird'</span>);
+
+<span class="hljs-keyword">var</span> dummyBroadcast = {
+
+  photoFind: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+    Photo.find({}, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, re2s</span>)</span>{
+      <span class="hljs-keyword">if</span>(err){
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'This is the error'</span>);
+        <span class="hljs-built_in">console</span>.log(err);
+      } <span class="hljs-keyword">else</span> {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'this is the find in dummy bcast'</span>);
+        <span class="hljs-built_in">console</span>.log(res);
+      }
+    });
+  },
+
+  fireStorePhoto: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+    <span class="hljs-keyword">var</span> dummyPhoto = { body:{} }
+    dummyPhoto.body.photoId = <span class="hljs-string">"43772621432956654430"</span>,
+    dummyPhoto.body.userId = <span class="hljs-number">7654321</span>,
+    dummyPhoto.body.radius = <span class="hljs-number">5</span>,
+    dummyPhoto.body.TTL = <span class="hljs-number">10</span>,
+    dummyPhoto.body.x = <span class="hljs-built_in">Math</span>.random() * (<span class="hljs-number">122.525999</span> - <span class="hljs-number">122.325999</span>) - (<span class="hljs-number">122.525999</span>);
+    dummyPhoto.body.y = <span class="hljs-built_in">Math</span>.random() * (<span class="hljs-number">37.813501</span> - <span class="hljs-number">37.613501</span>) + <span class="hljs-number">37.613501</span>;
+    dummyPhoto.body.timestamp = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>().getTime();
+
+    photoController.storePhoto(dummyPhoto, {
+      end: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{ <span class="hljs-keyword">return</span>; },
+      send: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{ <span class="hljs-keyword">return</span>; }
+    });
+  },
+
+  constantUser: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+    User.find({}, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, results</span>)</span>{
+      <span class="hljs-keyword">if</span>(err){
+        <span class="hljs-built_in">console</span>.log(err);
+      } <span class="hljs-keyword">else</span> {
+        <span class="hljs-built_in">console</span>.log(results[<span class="hljs-number">0</span>][<span class="hljs-string">'userId'</span>]);
+        fireStorePhoto();
+        <span class="hljs-keyword">return</span> results[<span class="hljs-number">0</span>][userId]; 
+      }
+    });
+  }
+
+}
+
+
+<span class="hljs-built_in">module</span>.exports = dummyBroadcast;
+
+<span class="hljs-keyword">var</span> app = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../../app'</span>);
+<span class="hljs-keyword">var</span> gpsController = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../../Controllers/gpsController.js'</span>);
+<span class="hljs-keyword">var</span> userController = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../../Controllers/userController.js'</span>);
+<span class="hljs-keyword">var</span> User = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../../Models/User.js'</span>);
+<span class="hljs-keyword">var</span> mocha = <span class="hljs-built_in">require</span>(<span class="hljs-string">'mocha'</span>);
+<span class="hljs-keyword">var</span> dummyBroadcast = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./dummyBroadcast.js'</span>);
+
+
+<span class="hljs-keyword">var</span> populateApp = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">num</span>)</span>{
+  <span class="hljs-keyword">var</span> userArr = [];</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-90">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-90">&#182;</a>
+              </div>
+              <p>creates an array of dummy users </p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">var</span> createDummyUserArr = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">num</span>)</span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-91">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-91">&#182;</a>
+              </div>
+              <p>creates fake userId </p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">var</span> userId = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+      <span class="hljs-keyword">var</span> id = <span class="hljs-string">""</span>;
+      <span class="hljs-keyword">while</span> (id.length &lt; <span class="hljs-number">7</span>) {
+        id +=  <span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * (<span class="hljs-number">10</span> - <span class="hljs-number">1</span>) + <span class="hljs-number">1</span>);
+      }
+      <span class="hljs-keyword">return</span> id;
+    };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-92">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-92">&#182;</a>
+              </div>
+              <p>generates random 10 digit username</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">var</span> randomName = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+      <span class="hljs-keyword">var</span> name = <span class="hljs-string">""</span>;
+      <span class="hljs-keyword">var</span> letters = <span class="hljs-string">"abcdefghijklmnopqrstuvwxyz"</span>;
+      <span class="hljs-keyword">for</span>(<span class="hljs-keyword">var</span> i=<span class="hljs-number">0</span>; name.length&lt;<span class="hljs-number">11</span>; i++){
+        <span class="hljs-keyword">var</span> slice = <span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random()*<span class="hljs-number">27</span>)
+        name += letters.slice(slice, slice+<span class="hljs-number">1</span>);
+      }
+      <span class="hljs-keyword">return</span> name;
+    };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-93">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-93">&#182;</a>
+              </div>
+              <p>generates random Lat in SF</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">var</span> genRndLat = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+      <span class="hljs-keyword">return</span> <span class="hljs-built_in">Math</span>.random() * (<span class="hljs-number">122.525999</span> - <span class="hljs-number">122.325999</span>) - (<span class="hljs-number">122.525999</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-94">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-94">&#182;</a>
+              </div>
+              <p>return genLat.toFixed(6);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-95">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-95">&#182;</a>
+              </div>
+              <p>generates random Long in SF</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">var</span> genRndLong = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+      <span class="hljs-keyword">return</span> <span class="hljs-built_in">Math</span>.random() * (<span class="hljs-number">37.813501</span> - <span class="hljs-number">37.613501</span>) + <span class="hljs-number">37.613501</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-96">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-96">&#182;</a>
+              </div>
+              <p>return genLong.toFixed(6);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    }
+    <span class="hljs-keyword">var</span> injectConstantUser = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+      <span class="hljs-keyword">var</span> constantUser = {body: {}};
+        constantUser.body = {};
+        constantUser.body.userId = <span class="hljs-number">7654321</span>;
+        constantUser.body.x = genRndLong();
+        constantUser.body.y = genRndLat();
+        constantUser.body.username = <span class="hljs-string">'Eden'</span>;
+        constantUser.body.password = <span class="hljs-string">'edenrules'</span>;
+      userArr.push(constantUser);
+    }();
+
+    <span class="hljs-keyword">var</span> createUser = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+      <span class="hljs-keyword">var</span> dummyUser = {body: {}}
+      dummyUser.body.userId = userId();
+      dummyUser.body.x = genRndLat();
+      dummyUser.body.y = genRndLong();
+      dummyUser.body.username = randomName();
+      dummyUser.body.password = randomName();</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-97">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-97">&#182;</a>
+              </div>
+              <p>dummyUser.body.inbox = []; </p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      userArr.push(dummyUser);
+    };
+
+    <span class="hljs-keyword">while</span>(userArr.length &lt; num){
+      createUser();
+    }
+  };
+
+  createDummyUserArr(num);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-98">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-98">&#182;</a>
+              </div>
+              <p>calls the insertCoords method from gps conroller for all dummy users</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">var</span> populateQuadTree = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">var</span> i=<span class="hljs-number">0</span>; i&lt;userArr.length; i++){
+      gpsController.insertCoords(userArr[i]);
+    }
+  };
+  populateQuadTree();
+
+  <span class="hljs-keyword">var</span> populateUserDB = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">var</span> i=<span class="hljs-number">0</span>; i&lt;userArr.length; i++){
+
+      User.create(userArr[i].body, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, result</span>)</span>{
+        <span class="hljs-keyword">if</span>(err){
+          <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Dummy User Create Error: "</span>, err);
+          <span class="hljs-keyword">return</span>;
+        } <span class="hljs-keyword">else</span> {
+          <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Successfully created dummy users: "</span>, result);
+        }
+      });
+    }
+    dummyBroadcast.fireStorePhoto();
+  };
+  populateUserDB();</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-99">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-99">&#182;</a>
+              </div>
+              <p>User.remove({}, function(err, result){
+  if(err){
+    console.log(err);
+  } else {
+    console.log(result);
+  }
+});</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-100">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-100">&#182;</a>
+              </div>
+              <p>  User.find({}, function(err, res){
+    if(err){
+      console.log(“this the error from pop: “, err);
+    } else {
+      console.log(res);
+    }
+  });</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>};
+
+
+populateApp(<span class="hljs-number">20</span>);
+
+
+
+#!<span class="hljs-regexp">/usr/</span>bin/env node
 
 <span class="hljs-comment">/**
  * Module dependencies.
@@ -73,11 +3256,11 @@ server.on(<span class="hljs-string">'listening'</span>, onListening);
         </li>
         
         
-        <li id="section-2">
+        <li id="section-101">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-2">&#182;</a>
+                <a class="pilcrow" href="#section-101">&#182;</a>
               </div>
               <p>named pipe</p>
 
@@ -91,11 +3274,11 @@ server.on(<span class="hljs-string">'listening'</span>, onListening);
         </li>
         
         
-        <li id="section-3">
+        <li id="section-102">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-3">&#182;</a>
+                <a class="pilcrow" href="#section-102">&#182;</a>
               </div>
               <p>port number</p>
 
@@ -123,11 +3306,11 @@ server.on(<span class="hljs-string">'listening'</span>, onListening);
         </li>
         
         
-        <li id="section-4">
+        <li id="section-103">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-4">&#182;</a>
+                <a class="pilcrow" href="#section-103">&#182;</a>
               </div>
               <p>handle specific listen errors with friendly messages</p>
 

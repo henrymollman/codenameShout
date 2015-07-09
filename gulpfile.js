@@ -21,7 +21,7 @@ gulp.task('lint', function() {
 
 // Documentation Tasks
 
-var filesToDoc = ['./shout/www/js/*.js', 'app.js', './routes/*.js', './bin/www'];
+var filesToDoc = ['./shout/www/js/*.js', './server/**/*', './routes/*.js', './bin/www'];
 
 gulp.task('concat', function() {
   return gulp.src(filesToDoc)
